@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace HassanShahriar\GoogleDriveBackup;
 
+use HassanShahriar\GoogleDriveBackup\Commands\BackupCleanCommand;
+use HassanShahriar\GoogleDriveBackup\Commands\BackupDownloadCommand;
+use HassanShahriar\GoogleDriveBackup\Commands\BackupListCommand;
+use HassanShahriar\GoogleDriveBackup\Commands\BackupRestoreCommand;
+use HassanShahriar\GoogleDriveBackup\Commands\BackupRunCommand;
+use HassanShahriar\GoogleDriveBackup\Commands\BackupTestCommand;
+use HassanShahriar\GoogleDriveBackup\Commands\BackupVerifyCommand;
 use Illuminate\Support\ServiceProvider;
 
 class GoogleDriveBackupServiceProvider extends ServiceProvider
 {
-    /**
-     * Register package services and merge configuration.
-     */
     public function register(): void
     {
         $this->mergeConfigFrom(
@@ -23,9 +27,6 @@ class GoogleDriveBackupServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * Bootstrap package services, assets, and publishable config.
-     */
     public function boot(): void
     {
         if ($this->app->runningInConsole()) {
@@ -37,13 +38,16 @@ class GoogleDriveBackupServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * Register the Artisan commands for Google Drive Backup.
-     */
     protected function registerCommands(): void
     {
         $this->commands([
-            \HassanShahriar\GoogleDriveBackup\Commands\BackupTestCommand::class,
+            BackupRunCommand::class,
+            BackupTestCommand::class,
+            BackupListCommand::class,
+            BackupCleanCommand::class,
+            BackupVerifyCommand::class,
+            BackupDownloadCommand::class,
+            BackupRestoreCommand::class,
         ]);
     }
 }

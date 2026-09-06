@@ -26,3 +26,4 @@ class GoogleDriveBackupException extends RuntimeException
         parent::__construct(self::sanitizeMessage($message), $code, $previous);
     }
 }
+

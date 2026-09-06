@@ -15,8 +15,7 @@ readonly class RetentionResult
         public array $kept = [],
         public array $toDelete = [],
         public array $summary = []
-    ) {
-    }
+    ) {}
 
     public function countKept(): int
     {

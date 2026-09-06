@@ -36,3 +36,4 @@ readonly class VerificationResult
         );
     }
 }
+

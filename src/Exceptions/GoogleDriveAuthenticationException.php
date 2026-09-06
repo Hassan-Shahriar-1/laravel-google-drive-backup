@@ -4,6 +4,4 @@ declare(strict_types=1);
 
 namespace HassanShahriar\GoogleDriveBackup\Exceptions;
 
-class GoogleDriveAuthenticationException extends GoogleDriveBackupException
-{
-}
+class GoogleDriveAuthenticationException extends GoogleDriveBackupException {}

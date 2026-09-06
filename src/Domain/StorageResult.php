@@ -43,3 +43,4 @@ readonly class StorageResult
         );
     }
 }
+

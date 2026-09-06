@@ -22,8 +22,7 @@ readonly class BackupMetadata
         public string $policy = 'default',
         public bool $encrypted = false,
         public array $extra = []
-    ) {
-    }
+    ) {}
 
     /**
      * Convert to array representation.
