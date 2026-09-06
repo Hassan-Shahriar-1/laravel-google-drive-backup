@@ -46,7 +46,7 @@ class DatabaseRestorer
             if ($sqlFile === null) {
                 throw new GoogleDriveBackupException(
                     "No SQL dump file found in the backup archive. " .
-                    "Expected file matching: database-{$connection}.sql"
+                        "Expected file matching: database-{$connection}.sql"
                 );
             }
 
@@ -142,7 +142,7 @@ class DatabaseRestorer
         if ($exitCode !== 0) {
             throw new GoogleDriveBackupException(
                 "Database restore failed using [{$tool}]. Exit code: {$exitCode}. " .
-                "Output: " . implode(' ', array_slice($output, 0, 5))
+                    "Output: " . implode(' ', array_slice($output, 0, 5))
             );
         }
     }
