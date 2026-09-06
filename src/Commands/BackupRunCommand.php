@@ -82,23 +82,23 @@ class BackupRunCommand extends Command
             $now      = new DateTimeImmutable('now', new DateTimeZone('UTC'));
 
             $metadata = new BackupMetadata(
-                application:      $appName,
-                environment:      $env,
-                type:             $type,
-                createdAt:        $now,
-                size:             $size,
+                application: $appName,
+                environment: $env,
+                type: $type,
+                createdAt: $now,
+                size: $size,
                 checksumAlgorithm: 'sha256',
-                checksum:         $checksum,
-                policy:           $policyName,
+                checksum: $checksum,
+                policy: $policyName,
             );
 
             $artifact = new BackupArtifact(
-                id:       uniqid('backup-', true),
+                id: uniqid('backup-', true),
                 filename: $filename,
-                path:     $tmpPath,
-                type:     $type,
+                path: $tmpPath,
+                type: $type,
                 createdAt: $now,
-                size:     $size,
+                size: $size,
                 checksum: $checksum,
                 metadata: $metadata,
             );

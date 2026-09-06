@@ -118,7 +118,7 @@ class DatabaseDumper
         if ($exitCode !== 0) {
             throw new GoogleDriveBackupException(
                 "Database dump failed using [{$tool}]. Exit code: {$exitCode}. " .
-                "Output: " . implode(' ', array_slice($output, 0, 3))
+                    "Output: " . implode(' ', array_slice($output, 0, 3))
             );
         }
     }
