@@ -1,0 +1,54 @@
+{
+    "name": "hassan-shahriar-1/laravel-google-drive-backup",
+    "description": "Policy-based Laravel backup management with Google Drive as a backup destination.",
+    "keywords": [
+        "laravel",
+        "backup",
+        "google drive",
+        "storage",
+        "retention",
+        "policy"
+    ],
+    "homepage": "https://github.com/Hassan-Shahriar-1/laravel-google-drive-backup",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Hassan Shahriar",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.3 || ^8.4 || ^8.5",
+        "illuminate/support": "^11.0 || ^12.0",
+        "illuminate/console": "^11.0 || ^12.0",
+        "illuminate/filesystem": "^11.0 || ^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0 || ^10.0",
+        "phpunit/phpunit": "^11.0",
+        "mockery/mockery": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "HassanShahriar\\GoogleDriveBackup\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "HassanShahriar\\GoogleDriveBackup\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "HassanShahriar\\GoogleDriveBackup\\GoogleDriveBackupServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {}
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
