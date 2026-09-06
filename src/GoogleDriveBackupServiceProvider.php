@@ -42,6 +42,8 @@ class GoogleDriveBackupServiceProvider extends ServiceProvider
      */
     protected function registerCommands(): void
     {
-        // Commands will be registered here as they are implemented in subsequent milestones
+        $this->commands([
+            \HassanShahriar\GoogleDriveBackup\Commands\BackupTestCommand::class,
+        ]);
     }
 }

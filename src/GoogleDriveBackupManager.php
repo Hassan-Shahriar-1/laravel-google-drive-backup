@@ -10,8 +10,7 @@ class GoogleDriveBackupManager
 {
     public function __construct(
         protected Application $app
-    ) {
-    }
+    ) {}
 
     /**
      * Get package version.
