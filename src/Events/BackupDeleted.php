@@ -9,6 +9,5 @@ class BackupDeleted
     public function __construct(
         public readonly string $fileId,
         public readonly string $filename
-    ) {
-    }
+    ) {}
 }

@@ -12,6 +12,5 @@ class BackupVerified
     public function __construct(
         public readonly BackupArtifact $artifact,
         public readonly VerificationResult $result
-    ) {
-    }
+    ) {}
 }

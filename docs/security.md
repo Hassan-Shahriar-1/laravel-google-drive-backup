@@ -43,3 +43,4 @@ Optional AES-256-CBC encryption is available:
 ## Reporting Vulnerabilities
 
 See [SECURITY.md](../SECURITY.md).
+

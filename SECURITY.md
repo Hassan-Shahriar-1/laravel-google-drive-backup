@@ -19,3 +19,4 @@ Report vulnerabilities privately by emailing the maintainer. You will receive a 
 - Filenames are sanitized to prevent path traversal.
 - Encryption keys must be stored outside Google Drive.
 - All API communication uses HTTPS.
+

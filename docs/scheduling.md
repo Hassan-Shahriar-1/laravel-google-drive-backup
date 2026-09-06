@@ -35,3 +35,4 @@ Ensure the Laravel scheduler cron entry is registered on your server:
 ```cron
 * * * * * cd /path/to/your-app && php artisan schedule:run >> /dev/null 2>&1
 ```
+

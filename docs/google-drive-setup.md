@@ -87,3 +87,4 @@ All connectivity and permission checks passed successfully!
 | `403 Forbidden` | Drive API not enabled | Enable Google Drive API in Cloud Console |
 | Folder not found | Wrong folder ID | Check `GOOGLE_DRIVE_BACKUP_FOLDER_ID` or leave blank to auto-create |
 | `insufficient_scope` | Missing Drive scope | Re-generate token with correct scope |
+

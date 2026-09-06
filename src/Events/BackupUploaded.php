@@ -12,6 +12,5 @@ class BackupUploaded
     public function __construct(
         public readonly BackupArtifact $artifact,
         public readonly StorageResult $result
-    ) {
-    }
+    ) {}
 }

@@ -13,8 +13,7 @@ class DefaultBackupPolicy implements BackupPolicy
         protected string $backupType = 'full',
         protected array $rules = ['daily' => 30, 'weekly' => 8, 'monthly' => 12],
         protected bool $verification = true
-    ) {
-    }
+    ) {}
 
     public function name(): string
     {

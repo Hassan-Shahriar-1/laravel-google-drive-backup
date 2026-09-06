@@ -15,8 +15,7 @@ class BackupVerificationService implements BackupVerifier
     public function __construct(
         protected GoogleDriveFileManager $fileManager,
         protected array $config = []
-    ) {
-    }
+    ) {}
 
     /**
      * Verify a backup artifact according to the configured verification mode.

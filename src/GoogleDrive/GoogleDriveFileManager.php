@@ -26,8 +26,7 @@ class GoogleDriveFileManager
 
     public function __construct(
         protected GoogleDriveClient $client
-    ) {
-    }
+    ) {}
 
     protected function getService(): GoogleDriveService
     {

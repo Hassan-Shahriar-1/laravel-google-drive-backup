@@ -146,7 +146,9 @@ class BackupRunCommand extends Command
         $zip = new \ZipArchive();
         $zip->open($path, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         $zip->addFromString('backup-info.txt', json_encode([
-            'type' => $type, 'app' => $app, 'env' => $env,
+            'type' => $type,
+            'app' => $app,
+            'env' => $env,
             'created_at' => (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(\DateTimeInterface::ATOM),
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         $zip->close();

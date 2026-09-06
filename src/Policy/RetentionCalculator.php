@@ -30,7 +30,9 @@ class RetentionCalculator implements RetentionManager
     {
         if (empty($backups)) {
             return new RetentionResult(kept: [], toDelete: [], summary: [
-                'total' => 0, 'kept' => 0, 'to_delete' => 0,
+                'total' => 0,
+                'kept' => 0,
+                'to_delete' => 0,
             ]);
         }
 

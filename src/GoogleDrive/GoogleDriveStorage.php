@@ -17,8 +17,7 @@ class GoogleDriveStorage implements BackupStorage
         protected GoogleDriveFolderManager $folderManager,
         protected GoogleDriveFileManager $fileManager,
         protected array $config = []
-    ) {
-    }
+    ) {}
 
     public function put(BackupArtifact $backup): StorageResult
     {

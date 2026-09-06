@@ -47,3 +47,4 @@ Copy extracted files to your application directory as needed.
 - Backups are validated before extraction.
 - Confirmation is always required before extraction.
 - Temporary files are cleaned up automatically.
+

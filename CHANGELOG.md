@@ -29,3 +29,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI workflow (PHP 8.3/8.4, Laravel 11/12 matrix)
 - Comprehensive unit and feature test suite (PHPUnit 11, Orchestra Testbench 10)
 - Full documentation suite (`docs/`)
+

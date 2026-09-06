@@ -11,6 +11,5 @@ class BackupStarted
     public function __construct(
         public readonly string $type,
         public readonly string $policy = 'default'
-    ) {
-    }
+    ) {}
 }

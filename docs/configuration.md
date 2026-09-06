@@ -71,3 +71,4 @@ Default: `{app}-{env}-{type}-{date}-{time}-{uuid}.zip`
 |-----|---------|-------------|
 | `enabled` | `true` | Enable logging |
 | `channel` | `stack` | Laravel log channel |
+

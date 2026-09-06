@@ -10,6 +10,5 @@ class BackupCreated
 {
     public function __construct(
         public readonly BackupArtifact $artifact
-    ) {
-    }
+    ) {}
 }

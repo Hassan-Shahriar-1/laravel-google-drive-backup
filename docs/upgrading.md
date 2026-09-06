@@ -16,3 +16,4 @@ No breaking changes are planned for 1.x. This guide will be updated when a major
    ```
 3. Review the [CHANGELOG](../CHANGELOG.md) for any breaking changes.
 4. Run your test suite.
+

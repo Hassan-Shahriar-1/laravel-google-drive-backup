@@ -12,6 +12,5 @@ class BackupFailed
         public readonly string $type,
         public readonly string $policy,
         public readonly Throwable $exception
-    ) {
-    }
+    ) {}
 }

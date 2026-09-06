@@ -11,6 +11,5 @@ class CleanupCompleted
     public function __construct(
         public readonly RetentionResult $result,
         public readonly bool $dryRun = false
-    ) {
-    }
+    ) {}
 }

@@ -206,3 +206,4 @@ vendor/bin/phpunit
 ## License
 
 MIT © Hassan Shahriar — see [LICENSE](LICENSE).
+
