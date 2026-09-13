@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HassanShahriar\GoogleDriveBackup;
 
+use HassanShahriar\GoogleDriveBackup\Commands\BackupAuthCommand;
 use HassanShahriar\GoogleDriveBackup\Commands\BackupCleanCommand;
 use HassanShahriar\GoogleDriveBackup\Commands\BackupDownloadCommand;
 use HassanShahriar\GoogleDriveBackup\Commands\BackupListCommand;
@@ -41,6 +42,7 @@ class GoogleDriveBackupServiceProvider extends ServiceProvider
     protected function registerCommands(): void
     {
         $this->commands([
+            BackupAuthCommand::class,
             BackupRunCommand::class,
             BackupTestCommand::class,
             BackupListCommand::class,

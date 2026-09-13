@@ -29,29 +29,22 @@ Follow these steps to configure Google Drive access for your Laravel backup pack
 
 ## 5. Obtain a Refresh Token
 
-Run the following script locally (replace placeholders with your values):
+You can generate the refresh token directly using the package's built-in command:
 
-```php
-<?php
-require 'vendor/autoload.php';
-
-$client = new Google\Client();
-$client->setClientId('YOUR_CLIENT_ID');
-$client->setClientSecret('YOUR_CLIENT_SECRET');
-$client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob');
-$client->addScope(Google\Service\Drive::DRIVE);
-$client->setAccessType('offline');
-$client->setPrompt('consent');
-
-echo "Visit this URL:\n" . $client->createAuthUrl() . "\n";
-echo "Enter the authorization code: ";
-$code = trim(fgets(STDIN));
-
-$token = $client->fetchAccessTokenWithAuthCode($code);
-echo "\nRefresh Token: " . $token['refresh_token'] . "\n";
+```bash
+php artisan backup:google-drive:refresh-token
 ```
 
-Copy the printed **refresh token** — this is what you'll store in `.env`.
+The command will:
+1. Ask for your Client ID and Client Secret (or read them from `.env` if already set).
+2. Generate an authorization URL for you to open in your browser.
+3. Prompt you to paste the authorization code provided by Google.
+4. Retrieve the long-lived refresh token and offer to automatically save it into your `.env` file!
+
+Alternatively, you can pass arguments directly:
+```bash
+php artisan backup:google-drive:refresh-token --client-id=YOUR_CLIENT_ID --client-secret=YOUR_CLIENT_SECRET
+```
 
 ## 6. Configure Your `.env`
 

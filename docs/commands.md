@@ -1,5 +1,21 @@
 # Artisan Commands
 
+## `backup:google-drive:refresh-token`
+
+Interactively generate a Google OAuth 2.0 refresh token and optionally save it to `.env`. (Alias: `backup:google-drive:token`)
+
+```bash
+php artisan backup:google-drive:refresh-token
+```
+
+| Option | Description |
+|--------|-------------|
+| `--client-id=` | Google OAuth Client ID |
+| `--client-secret=` | Google OAuth Client Secret |
+| `--redirect=` | Redirect URI (default: `urn:ietf:wg:oauth:2.0:oob`) |
+
+---
+
 ## `backup:google-drive`
 
 Create and upload a backup to Google Drive.

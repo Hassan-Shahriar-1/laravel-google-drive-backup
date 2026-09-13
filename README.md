@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/Hassan-Shahriar-1/laravel-google-drive-backup/workflows/Tests/badge.svg)](https://github.com/Hassan-Shahriar-1/laravel-google-drive-backup/actions)
 [![PHP](https://img.shields.io/badge/PHP-8.3%2B-blue)](https://php.net)
-[![Laravel](https://img.shields.io/badge/Laravel-11%2F12-red)](https://laravel.com)
+[![Laravel](https://img.shields.io/badge/Laravel-10%20%7C%2011%20%7C%2012%20%7C%2013-red)](https://laravel.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Policy-based Laravel backup management with Google Drive as a backup destination.**
@@ -14,6 +14,7 @@ This package provides a focused integration layer that connects Laravel applicat
 ## Features
 
 - ✅ Google OAuth 2.0 authentication with refresh token support
+- ✅ Interactive CLI command (`backup:google-drive:refresh-token`) to generate OAuth refresh tokens
 - ✅ Chunked, streaming upload for large backup archives (no memory exhaustion)
 - ✅ Paginated backup listing from Google Drive
 - ✅ Multi-tier retention policy (daily, weekly, monthly) with overlap protection
@@ -31,8 +32,8 @@ This package provides a focused integration layer that connects Laravel applicat
 
 | Package | Version |
 |---------|---------|
-| PHP     | ^8.3    |
-| Laravel | ^11.0 \| ^12.0 |
+| PHP     | ^8.3 \| ^8.4 \| ^8.5 |
+| Laravel | >= 10.0 (supports 10.x, 11.x, 12.x, 13.x+) |
 
 ---
 
@@ -100,6 +101,7 @@ php artisan backup:google-drive:list
 
 | Command | Description |
 |---------|-------------|
+| `backup:google-drive:refresh-token` | Interactively generate OAuth refresh token & save to `.env` |
 | `backup:google-drive` | Create and upload a backup |
 | `backup:google-drive:test` | Test credentials and folder access |
 | `backup:google-drive:list` | List all remote backups |
@@ -114,7 +116,7 @@ Use `--dry-run` with `backup:google-drive:clean` to preview what would be delete
 
 ## Scheduling
 
-Add to your `routes/console.php` (Laravel 11+):
+Add to your `routes/console.php` (Laravel 11, 12, 13+):
 
 ```php
 use Illuminate\Support\Facades\Schedule;
@@ -199,7 +201,7 @@ vendor/bin/phpunit
 
 | Package | Laravel | PHP  |
 |---------|---------|------|
-| 1.x     | 11.x / 12.x | 8.3+ |
+| 1.x     | 10.x / 11.x / 12.x / 13.x+ | 8.3+ |
 
 ---
 

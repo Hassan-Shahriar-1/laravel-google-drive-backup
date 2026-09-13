@@ -2,8 +2,8 @@
 
 ## Requirements
 
-- PHP 8.3 or higher
-- Laravel 11 or 12
+- PHP 8.3 or higher (PHP 8.3, 8.4, 8.5)
+- Laravel 10, 11, 12, or 13+ (`>=10.0`)
 - Composer
 - A Google Cloud project with Drive API enabled
 

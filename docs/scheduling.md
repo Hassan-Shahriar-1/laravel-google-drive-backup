@@ -2,7 +2,7 @@
 
 The package does **not** register any hidden schedules. Add scheduling explicitly in your application.
 
-## Laravel 11+ (`routes/console.php`)
+## Laravel 11, 12, 13+ (`routes/console.php`)
 
 ```php
 use Illuminate\Support\Facades\Schedule;
