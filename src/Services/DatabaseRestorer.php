@@ -55,7 +55,8 @@ class DatabaseRestorer
                 'mysql', 'mariadb' => $this->restoreMysql($dbConfig, $sqlFile),
                 'pgsql'            => $this->restorePgsql($dbConfig, $sqlFile),
                 'sqlite'           => $this->restoreSqlite($dbConfig, $sqlFile),
-                default            => throw new GoogleDriveBackupException("Unsupported driver [{$driver}].")
+                'sqlsrv'           => $this->restoreSqlsrv($dbConfig, $sqlFile),
+                default            => throw new GoogleDriveBackupException("Unsupported driver [{$driver}]. Supported: mysql, mariadb, pgsql, sqlite, sqlsrv.")
             };
         } finally {
             $this->deleteDirectory($tmpDir);
@@ -118,17 +119,58 @@ class DatabaseRestorer
         }
     }
 
+    // ─── SQL Server (sqlsrv) ──────────────────────────────────────────────────
+
+    private function restoreSqlsrv(array $config, string $sqlFile): void
+    {
+        $host     = (string) ($config['host'] ?? '127.0.0.1');
+        $port     = (int)   ($config['port'] ?? 1433);
+        $server   = $port !== 1433 ? "{$host},{$port}" : $host;
+        $database = (string) ($config['database'] ?? '');
+        $username = (string) ($config['username'] ?? '');
+        $password = (string) ($config['password'] ?? '');
+
+        if (!$this->commandExists('sqlcmd')) {
+            throw new GoogleDriveBackupException(
+                "Database restore for SQL Server (sqlsrv) requires the [sqlcmd] utility. " .
+                    "Please install mssql-tools on your system."
+            );
+        }
+
+        $serverArg = escapeshellarg($server);
+        $authArg   = !empty($username)
+            ? "-U " . escapeshellarg($username) . " -P " . escapeshellarg($password)
+            : "-E";
+
+        if (str_ends_with(strtolower($sqlFile), '.bak')) {
+            $command = "sqlcmd -S {$serverArg} {$authArg} -d master -Q \"RESTORE DATABASE [{$database}] FROM DISK = N'{$sqlFile}' WITH REPLACE\" 2>&1";
+        } else {
+            $command = "sqlcmd -S {$serverArg} {$authArg} -d " . escapeshellarg($database) . " -i " . escapeshellarg($sqlFile) . " 2>&1";
+        }
+
+        $this->runShellCommand($command, 'sqlcmd');
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private function findSqlFile(string $directory, string $connection): ?string
     {
-        // Look for database-{connection}.sql first, then any .sql file
-        $preferred = $directory . "/database-{$connection}.sql";
-        if (file_exists($preferred)) {
-            return $preferred;
+        // Look for database-{connection}.sql or database-{connection}.bak
+        $preferredSql = $directory . "/database-{$connection}.sql";
+        if (file_exists($preferredSql)) {
+            return $preferredSql;
+        }
+
+        $preferredBak = $directory . "/database-{$connection}.bak";
+        if (file_exists($preferredBak)) {
+            return $preferredBak;
         }
 
         foreach (glob($directory . '/*.sql') ?: [] as $file) {
+            return $file;
+        }
+
+        foreach (glob($directory . '/*.bak') ?: [] as $file) {
             return $file;
         }
 

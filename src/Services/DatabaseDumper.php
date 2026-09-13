@@ -29,7 +29,8 @@ class DatabaseDumper
                 'mysql', 'mariadb' => $this->dumpMysql($dbConfig, $sqlDumpPath),
                 'pgsql'            => $this->dumpPgsql($dbConfig, $sqlDumpPath),
                 'sqlite'           => $this->dumpSqlite($dbConfig, $sqlDumpPath),
-                default            => throw new GoogleDriveBackupException("Unsupported database driver [{$driver}]. Supported: mysql, pgsql, sqlite.")
+                'sqlsrv'           => $this->dumpSqlsrv($dbConfig, $sqlDumpPath),
+                default            => throw new GoogleDriveBackupException("Unsupported database driver [{$driver}]. Supported: mysql, mariadb, pgsql, sqlite, sqlsrv.")
             };
 
             // Wrap the SQL dump in a ZIP archive
@@ -107,6 +108,36 @@ class DatabaseDumper
             // Fallback: copy the raw database file as SQL placeholder
             copy($databasePath, $outputPath);
         }
+    }
+
+    // ─── SQL Server (sqlsrv) ──────────────────────────────────────────────────
+
+    private function dumpSqlsrv(array $config, string $outputPath): void
+    {
+        $host     = (string) ($config['host'] ?? '127.0.0.1');
+        $port     = (int)   ($config['port'] ?? 1433);
+        $server   = $port !== 1433 ? "{$host},{$port}" : $host;
+        $database = (string) ($config['database'] ?? '');
+        $username = (string) ($config['username'] ?? '');
+        $password = (string) ($config['password'] ?? '');
+
+        if (!$this->commandExists('sqlcmd')) {
+            throw new GoogleDriveBackupException(
+                "Database dump for SQL Server (sqlsrv) requires the [sqlcmd] utility. " .
+                    "Please install mssql-tools or sqlcmd on your system."
+            );
+        }
+
+        $serverArg   = escapeshellarg($server);
+        $databaseArg = escapeshellarg($database);
+
+        $authArg = !empty($username)
+            ? "-U " . escapeshellarg($username) . " -P " . escapeshellarg($password)
+            : "-E";
+
+        $command = "sqlcmd -S {$serverArg} {$authArg} -d {$databaseArg} -Q \"BACKUP DATABASE [{$database}] TO DISK = N'{$outputPath}' WITH INIT, COPY_ONLY\" 2>&1";
+
+        $this->runShellCommand($command, 'sqlcmd');
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────

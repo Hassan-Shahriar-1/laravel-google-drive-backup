@@ -29,6 +29,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Database Connection & Default Backup Type
+    |--------------------------------------------------------------------------
+    |
+    | The database connection to dump. If null, it defaults to DB_CONNECTION from .env
+    | Supported drivers: mysql, mariadb, pgsql, sqlite, sqlsrv.
+    |
+    | default_type can be: 'database', 'files', 'full'
+    |
+    */
+    'database_connection' => env('GOOGLE_DRIVE_BACKUP_DB_CONNECTION', env('DB_CONNECTION')),
+
+    'default_type' => env('GOOGLE_DRIVE_BACKUP_TYPE', 'database'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Subfolder Organization
     |--------------------------------------------------------------------------
     |

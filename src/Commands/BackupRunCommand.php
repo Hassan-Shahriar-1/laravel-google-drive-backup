@@ -30,8 +30,9 @@ class BackupRunCommand extends Command
 {
     protected $signature = 'backup:google-drive
                             {--policy=default    : Policy name to use}
-                            {--type=full         : Backup type: full | database | files}
-                            {--connection=       : Database connection to dump (default: DB_CONNECTION)}
+                            {--type=             : Backup type: database | files | full}
+                            {--db                : Shortcut to perform database-only backup}
+                            {--connection=       : Database connection (sqlsrv, pgsql, mariadb, mysql, sqlite)}
                             {--force             : Run even if backups are disabled}
                             {--no-verify         : Skip post-upload verification}';
 
@@ -42,9 +43,14 @@ class BackupRunCommand extends Command
         $config     = (array) config('google-drive-backup', []);
         $enabled    = (bool) ($config['enabled'] ?? true);
         $policyName = (string) $this->option('policy');
-        $type       = (string) $this->option('type');
         $noVerify   = (bool) $this->option('no-verify');
-        $connection = $this->option('connection') ?: null;
+
+        // Resolve connection (CLI option -> config -> GOOGLE_DRIVE_BACKUP_DB_CONNECTION -> DB_CONNECTION -> default)
+        $connection = $this->option('connection')
+            ?: config('google-drive-backup.database_connection')
+            ?: env('GOOGLE_DRIVE_BACKUP_DB_CONNECTION')
+            ?: env('DB_CONNECTION')
+            ?: config('database.default');
 
         if (!$enabled && !$this->option('force')) {
             $this->warn('Google Drive backups are disabled. Use --force to override.');
@@ -58,13 +64,21 @@ class BackupRunCommand extends Command
             $policyMgr = new BackupPolicyManager($config);
             $policy    = $policyMgr->resolve($policyName);
 
-            // If policy has a fixed type, use it (unless overridden on CLI)
-            if ($policy->type() !== 'full' && $this->option('type') === 'full') {
+            // ── Resolve type ──────────────────────────────────────────────────
+            $typeOption = $this->option('type');
+            if ($this->option('db')) {
+                $type = 'database';
+            } elseif (!empty($typeOption)) {
+                $type = (string) $typeOption;
+            } elseif ($policy->type() !== 'full') {
                 $type = $policy->type();
+            } else {
+                $type = (string) (config('google-drive-backup.default_type')
+                    ?: (config('google-drive-backup.backup.files') === false ? 'database' : 'database'));
             }
 
             Event::dispatch(new BackupStarted($type, $policyName));
-            $this->info("Starting [{$type}] backup using policy [{$policyName}]...");
+            $this->info("Starting [{$type}] backup using policy [{$policyName}] (connection: [{$connection}])...");
 
             // ── Build filename ────────────────────────────────────────────────
             $filenameGen = new FilenameGenerator();
@@ -166,10 +180,13 @@ class BackupRunCommand extends Command
 
     private function createDatabaseBackup(string $zipPath, ?string $connection): void
     {
-        $this->line('  Dumping database...');
+        $conn   = $connection ?? config('database.default');
+        $driver = (string) config("database.connections.{$conn}.driver", 'database');
+
+        $this->line("  Dumping database connection [{$conn}] (driver: {$driver})...");
         $dumper = new DatabaseDumper();
-        $dumper->dumpToZip($zipPath, $connection);
-        $this->line('  ✓ Database dump complete.');
+        $dumper->dumpToZip($zipPath, $conn);
+        $this->line("  ✓ Database dump complete [{$conn} / {$driver}].");
     }
 
     private function createFilesBackup(string $zipPath): void

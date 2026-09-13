@@ -97,6 +97,49 @@ php artisan backup:google-drive:list
 
 ---
 
+## Database Backups & Supported Drivers
+
+The package natively dumps and restores all major database drivers used in Laravel:
+
+| Driver | Engine | Tool Used |
+|---|---|---|
+| `mysql` | MySQL | `mysqldump` |
+| `mariadb` | MariaDB | `mysqldump` |
+| `pgsql` | PostgreSQL | `pg_dump` |
+| `sqlite` | SQLite | `sqlite3` (or raw file copy) |
+| `sqlsrv` | SQL Server / Azure SQL | `sqlcmd` |
+
+### Database Backup Examples
+
+```bash
+# Dump default database (taken automatically from DB_CONNECTION in .env)
+php artisan backup:google-drive --type=database
+# or shortcut:
+php artisan backup:google-drive --db
+
+# Dump a specific connection defined in config/database.php:
+php artisan backup:google-drive --db --connection=pgsql
+php artisan backup:google-drive --db --connection=sqlsrv
+php artisan backup:google-drive --db --connection=sqlite
+
+# If --connection is NOT passed, it automatically resolves in order:
+# 1. GOOGLE_DRIVE_BACKUP_DB_CONNECTION from .env
+# 2. DB_CONNECTION from .env
+# 3. config('database.default')
+```
+
+### Database Restore
+
+```bash
+# Download and automatically restore database
+php artisan backup:google-drive:restore {FILE_ID} --db-restore
+
+# Restore to a specific database connection
+php artisan backup:google-drive:restore {FILE_ID} --db-restore --connection=pgsql
+```
+
+---
+
 ## Artisan Commands
 
 | Command | Description |
