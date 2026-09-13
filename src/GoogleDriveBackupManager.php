@@ -17,7 +17,7 @@ class GoogleDriveBackupManager
      */
     public function version(): string
     {
-        return '1.0.0';
+        return '1.0.1';
     }
 
     /**

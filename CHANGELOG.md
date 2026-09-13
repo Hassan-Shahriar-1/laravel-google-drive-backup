@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-09-13
+
+### Added
+- Expanded framework support to include Laravel 10, 11, 12, and 13 (`illuminate/*: ^10.0 || ^11.0 || ^12.0 || ^13.0`).
+
 ## [1.0.0] - 2026-09-06
 
 ### Added
