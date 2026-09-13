@@ -26,8 +26,10 @@ php artisan backup:google-drive [options]
 
 | Option | Description |
 |--------|-------------|
+| `--type=` | Backup type: `database`, `files`, `full` (defaults to database) |
+| `--db` | Shortcut flag for `--type=database` |
+| `--connection=` | Database connection (`mysql`, `mariadb`, `pgsql`, `sqlite`, `sqlsrv`). Defaults to `DB_CONNECTION` in `.env` |
 | `--policy=default` | Named policy to use |
-| `--type=full` | Backup type: `full`, `database`, `files` |
 | `--force` | Run even if backups are disabled |
 | `--no-verify` | Skip post-upload verification |
 
@@ -97,11 +99,18 @@ php artisan backup:google-drive:download FILE_ID /path/to/save.zip
 
 ## `backup:google-drive:restore {id}`
 
-Download and extract a backup for restoration.
+Download and restore a backup (files and/or database).
 
 ```bash
-php artisan backup:google-drive:restore FILE_ID [--destination=/path/to/extract]
+php artisan backup:google-drive:restore FILE_ID [options]
 ```
 
-> This is a destructive operation. Always confirm before proceeding.
+| Option | Description |
+|--------|-------------|
+| `--db-restore` | Automatically restore the SQL dump into the database |
+| `--connection=` | Database connection to restore into (defaults to `DB_CONNECTION`) |
+| `--destination=` | Directory to extract application files to (default: `storage/app/restore`) |
+| `--force` | Skip confirmation prompts |
+
+> Database restore is a destructive operation. Always confirm before proceeding in production environments.
 

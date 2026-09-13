@@ -11,6 +11,18 @@ Used in backup filenames and Google Drive folder paths. Default: `env('APP_NAME'
 ## `environment`
 Used to namespace backups (e.g. `production`, `staging`). Default: `env('APP_ENV')`.
 
+## `database_connection`
+The database connection to dump. If omitted, defaults to `env('GOOGLE_DRIVE_BACKUP_DB_CONNECTION')`, `env('DB_CONNECTION')`, or `config('database.default')`.
+Supports: `mysql`, `mariadb`, `pgsql`, `sqlite`, `sqlsrv`.
+
+## `default_type`
+The backup type used when `--type` is not specified on the command line. Default: `database`.
+Options: `database`, `files`, `full`.
+
+## `subfolders`
+Whether to organize backups into environment subfolders (e.g. `production/`, `staging/`) inside the Google Drive folder.
+Default: `false` (saves directly in the target folder). Set to `true` to enable.
+
 ## `google`
 
 | Key | Description |

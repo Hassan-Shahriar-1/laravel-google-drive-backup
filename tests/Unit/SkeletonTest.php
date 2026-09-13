@@ -19,7 +19,7 @@ class SkeletonTest extends TestCase
 
     public function test_facade_resolves_correctly(): void
     {
-        $this->assertSame('1.0.1', GoogleDriveBackup::version());
+        $this->assertSame('2.0.0', GoogleDriveBackup::version());
         $this->assertTrue(GoogleDriveBackup::isEnabled());
     }
 

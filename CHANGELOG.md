@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.1] - 2026-09-13
+## [2.0.0] - 2026-09-13
 
 ### Added
-- Expanded framework support to include Laravel 10, 11, 12, and 13 (`illuminate/*: ^10.0 || ^11.0 || ^12.0 || ^13.0`).
+- Expanded framework support to include all Laravel versions `>=10.0` (Laravel 10, 11, 12, and 13+).
+- Added `backup:google-drive:refresh-token` interactive command (and `token` alias) to generate and auto-save OAuth refresh tokens into `.env`.
+- Added support for all major Laravel database drivers: `mysql`, `mariadb`, `pgsql`, `sqlite`, and `sqlsrv`.
+- Automatic database connection resolution falling back to `GOOGLE_DRIVE_BACKUP_DB_CONNECTION`, `DB_CONNECTION` from `.env`, and `config('database.default')`.
+- Added `--db` shortcut option to `backup:google-drive` command.
+- Automated database restoration in `backup:google-drive:restore` with the `--db-restore` flag.
+- Added `subfolders` configuration option (`GOOGLE_DRIVE_BACKUP_SUBFOLDERS`), defaulting to `false` so backups are placed directly into the specified folder without extra nested environment directories.
 
 ## [1.0.0] - 2026-09-06
 
