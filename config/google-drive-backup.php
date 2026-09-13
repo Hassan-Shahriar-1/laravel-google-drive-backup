@@ -29,6 +29,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Subfolder Organization
+    |--------------------------------------------------------------------------
+    |
+    | When false (default), backups are stored directly in the specified folder.
+    | When true, backups are organized into environment subfolders (e.g. production).
+    |
+    */
+    'subfolders' => env('GOOGLE_DRIVE_BACKUP_SUBFOLDERS', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Google Drive Credentials & Root Folder
     |--------------------------------------------------------------------------
     |

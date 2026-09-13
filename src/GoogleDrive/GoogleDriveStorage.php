@@ -24,11 +24,13 @@ class GoogleDriveStorage implements BackupStorage
         try {
             $rootFolderId = $this->folderManager->resolveRootFolderId();
 
-            // Build subfolder path: app-name / environment
-            $appName = sanitize_string_for_path($this->config['application_name'] ?? 'laravel');
-            $env = sanitize_string_for_path($this->config['environment'] ?? 'production');
-
-            $targetFolderId = $this->folderManager->resolveSubfolderPath($rootFolderId, [$appName, $env]);
+            // Only create environment subfolders if explicitly enabled
+            if ((bool) ($this->config['subfolders'] ?? false)) {
+                $env = sanitize_string_for_path($this->config['environment'] ?? 'production');
+                $targetFolderId = $this->folderManager->resolveSubfolderPath($rootFolderId, [$env]);
+            } else {
+                $targetFolderId = $rootFolderId;
+            }
 
             if ($backup->path === null || !file_exists($backup->path)) {
                 return StorageResult::failure("Local backup file not found: {$backup->path}", $backup->filename);
