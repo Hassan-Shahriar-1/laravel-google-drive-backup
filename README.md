@@ -145,10 +145,10 @@ php artisan backup:google-drive --db --connection=sqlite
 
 ```bash
 # Download and automatically restore database
-php artisan backup:google-drive:restore {FILE_ID} --db-restore
+php artisan backup:google-drive:restore-db {FILE_ID}
 
 # Restore to a specific database connection
-php artisan backup:google-drive:restore {FILE_ID} --db-restore --connection=pgsql
+php artisan backup:google-drive:restore-db {FILE_ID} --connection=pgsql
 ```
 
 ---
@@ -233,7 +233,7 @@ php artisan backup:google-drive --files --path=".env" --path="composer.json"
 | `backup:google-drive:clean` | Apply retention policy and delete expired backups |
 | `backup:google-drive:verify` | Verify remote backup integrity |
 | `backup:google-drive:download {id} {destination}` | Download a backup locally |
-| `backup:google-drive:restore {id}` | Download and extract a backup for restoration |
+| `backup:google-drive:restore-db {id}` | Download a backup and restore the database (alias: `restore`) |
 
 Use `--dry-run` with `backup:google-drive:clean` to preview what would be deleted without making changes.
 

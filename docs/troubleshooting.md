@@ -60,7 +60,6 @@
 Enable verbose Laravel logging:
 ```env
 LOG_LEVEL=debug
-GOOGLE_DRIVE_BACKUP_LOG_CHANNEL=single
 ```
 
 Run the test command:

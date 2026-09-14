@@ -153,4 +153,32 @@ class BackupCommandsTest extends TestCase
             @unlink($zipPath);
         }
     }
+
+    public function test_backup_restore_command_fails_gracefully_without_credentials(): void
+    {
+        config()->set('google-drive-backup.google.client_id', null);
+        config()->set('google-drive-backup.google.client_secret', null);
+        config()->set('google-drive-backup.google.refresh_token', null);
+
+        $this->artisan('backup:google-drive:restore-db', ['id' => 'fake-id', '--force' => true])
+            ->assertFailed();
+    }
+
+    public function test_backup_restore_can_be_cancelled_at_confirmation(): void
+    {
+        $this->artisan('backup:google-drive:restore-db', ['id' => 'fake-id'])
+            ->expectsConfirmation('Are you sure you want to restore the database from backup [fake-id]?', 'no')
+            ->expectsOutputToContain('Database restore cancelled.')
+            ->assertSuccessful();
+    }
+
+    public function test_backup_restore_alias_works(): void
+    {
+        config()->set('google-drive-backup.google.client_id', null);
+        config()->set('google-drive-backup.google.client_secret', null);
+        config()->set('google-drive-backup.google.refresh_token', null);
+
+        $this->artisan('backup:google-drive:restore', ['id' => 'fake-id', '--force' => true])
+            ->assertFailed();
+    }
 }

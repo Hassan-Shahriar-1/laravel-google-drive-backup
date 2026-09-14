@@ -13,11 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Expanded framework support to include all Laravel versions `>=10.0` (Laravel 10, 11, 12, and 13+).
 - Added `backup:google-drive:refresh-token` interactive command (and `token` alias) to generate and auto-save OAuth refresh tokens into `.env`.
 - Added support for all major Laravel database drivers: `mysql`, `mariadb`, `pgsql`, `sqlite`, and `sqlsrv`.
-- Automatic database connection resolution falling back to `GOOGLE_DRIVE_BACKUP_DB_CONNECTION`, `DB_CONNECTION` from `.env`, and `config('database.default')`.
+- Automatic database connection resolution using `DB_CONNECTION` from `.env` or `config('database.default')`, with dynamic CLI override via `--connection=<driver>`.
 - Added `--db` shortcut option to `backup:google-drive` command.
-- Automated database restoration in `backup:google-drive:restore` with the `--db-restore` flag.
-- Added `subfolders` configuration option (`GOOGLE_DRIVE_BACKUP_SUBFOLDERS`), defaulting to `false` so backups are placed directly into the specified folder without extra nested environment directories.
+- Added dedicated `backup:google-drive:restore-db` command for automated database restoration directly from Google Drive.
 - Added `--subfolder=` and `--by-type` options across backup commands, allowing custom subfolder destinations (e.g. `database/`, `others/`) while defaulting to root folder when omitted.
+- Added dynamic path targeting via `--path` option to back up specific directories or files.
 
 ## [1.0.0] - 2026-09-06
 

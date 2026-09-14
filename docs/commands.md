@@ -141,19 +141,17 @@ php artisan backup:google-drive:download FILE_ID /path/to/save.zip
 
 ---
 
-## `backup:google-drive:restore {id}`
+## `backup:google-drive:restore-db {id}`
 
-Download and restore a backup (files and/or database).
+Download a backup from Google Drive and restore the database. (Alias: `backup:google-drive:restore`)
 
 ```bash
-php artisan backup:google-drive:restore FILE_ID [options]
+php artisan backup:google-drive:restore-db FILE_ID [options]
 ```
 
 | Option | Description |
 |--------|-------------|
-| `--db-restore` | Automatically restore the SQL dump into the database |
 | `--connection=` | Database connection to restore into (defaults to `DB_CONNECTION`) |
-| `--destination=` | Directory to extract application files to (default: `storage/app/restore`) |
 | `--force` | Skip confirmation prompts |
 
 > Database restore is a destructive operation. Always confirm before proceeding in production environments.

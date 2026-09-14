@@ -22,8 +22,8 @@
 
 ## Restore Safety
 
-- The restore command always validates the downloaded archive before extraction.
-- Explicit user confirmation is required before any files are extracted.
+- The restore command always validates the downloaded archive before restoration.
+- Explicit user confirmation is required before the database is overwritten (bypassed only with `--force`).
 
 ## Network Security
 

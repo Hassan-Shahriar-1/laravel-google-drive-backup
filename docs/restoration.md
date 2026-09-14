@@ -1,6 +1,8 @@
 # Restoration
 
-## Step-by-Step Restore
+## Restoring Your Database
+
+The `backup:google-drive:restore-db` command is dedicated to downloading and automatically restoring your database directly from Google Drive. (Alias: `backup:google-drive:restore`)
 
 ### 1. List Available Backups
 
@@ -8,55 +10,63 @@
 # List all backups across root and all subfolders:
 php artisan backup:google-drive:list
 
-# Or filter to a specific subfolder:
+# Or filter to a specific subfolder (e.g. database):
 php artisan backup:google-drive:list --subfolder=database
 ```
 
 Note the **ID** of the backup you want to restore.
 
-### 2. Download the Backup
+---
+
+### 2. Restore the Database
+
+Run the restore command with the backup ID:
 
 ```bash
-php artisan backup:google-drive:download FILE_ID /tmp/restore.zip
-```
-
-### 3. Restore Using the Command
-
-#### Option A: Automatic Database Restore (Recommended)
-
-```bash
-php artisan backup:google-drive:restore FILE_ID --db-restore
+php artisan backup:google-drive:restore-db FILE_ID
 ```
 
 The command will:
-1. Download the backup from Google Drive.
-2. Validate that it is a valid ZIP archive and auto-detect the backup type.
-3. Automatically restore the SQL dump into your database using the appropriate driver CLI (`mysql`, `mariadb`, `pgsql`, `sqlite`, or `sqlsrv`).
-4. If the archive also includes application files, extracts them to `--destination`.
+1. Download the backup from Google Drive to a secure temporary location.
+2. Validate that the archive contains a database dump.
+3. Prompt for confirmation before overwriting your database.
+4. Restore tables and data into your database using the appropriate driver CLI (`mysql`, `mariadb`, `pgsql`, `sqlite`, or `sqlsrv`).
+5. Safely clean up all temporary files immediately.
 
-To restore into a specific database connection:
-```bash
-php artisan backup:google-drive:restore FILE_ID --db-restore --connection=pgsql
-```
+#### Restore into a Specific Connection
 
-To run unattended without prompts (CI/CD / scripts):
-```bash
-php artisan backup:google-drive:restore FILE_ID --db-restore --force
-```
-
-#### Option B: Extract Files Only (Without Auto-Restoring Database)
+If you want to restore into a specific database connection defined in `config/database.php`:
 
 ```bash
-php artisan backup:google-drive:restore FILE_ID --destination=/var/www/restore
+php artisan backup:google-drive:restore-db FILE_ID --connection=pgsql
 ```
 
-You can then review extracted files and import the `.sql` dump manually if preferred.
+#### Unattended Restore (CI/CD or Automated Scripts)
 
-> **Warning:** Database restore is a destructive operation that replaces table contents. Always verify backups before restoring in a production environment.
+To skip the interactive confirmation prompt, use `--force`:
 
-## Security Notes
+```bash
+php artisan backup:google-drive:restore-db FILE_ID --force
+```
 
-- Backups are validated before extraction.
-- Confirmation is always required before extraction.
-- Temporary files are cleaned up automatically.
+---
 
+### 3. Downloading Application Files
+
+If you need to retrieve raw application files or custom path backups, use the dedicated download command:
+
+```bash
+php artisan backup:google-drive:download FILE_ID /path/to/local/backup.zip
+```
+
+You can then extract and inspect the archive locally without risking changes to your live codebase.
+
+---
+
+## Safety & Security Notes
+
+> **Warning:** Database restoration is a destructive operation that overwrites existing tables and records. Always ensure you have a recent snapshot or test on staging first.
+
+- The restore command validates archive integrity before running any restore queries.
+- A confirmation prompt is displayed by default to prevent accidental overwrites.
+- Temporary files are always removed upon completion or failure.
