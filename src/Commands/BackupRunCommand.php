@@ -30,7 +30,6 @@ use ZipArchive;
 class BackupRunCommand extends Command
 {
     protected $signature = 'backup:google-drive
-                            {--policy=default    : Policy name to use}
                             {--db                : Backup database only}
                             {--files             : Backup application files only}
                             {--full              : Backup both database and files}
@@ -47,7 +46,7 @@ class BackupRunCommand extends Command
     {
         $config     = (array) config('google-drive-backup', []);
         $enabled    = (bool) ($config['enabled'] ?? true);
-        $policyName = (string) $this->option('policy');
+        $policyName = 'default';
         $noVerify   = (bool) $this->option('no-verify');
 
         // Resolve connection (CLI option -> config -> DB_CONNECTION -> default)

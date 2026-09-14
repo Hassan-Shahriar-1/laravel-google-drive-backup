@@ -19,9 +19,8 @@ use Illuminate\Support\Facades\Event;
 class BackupCleanCommand extends Command
 {
     protected $signature = 'backup:google-drive:clean
-                            {--dry-run        : Show what would be deleted without deleting}
-                            {--policy=default : Policy name to use for retention rules}
-                            {--subfolder=     : Clean backups inside a specific subfolder (e.g. database, others)}';
+                            {--dry-run    : Show what would be deleted without deleting}
+                            {--subfolder= : Clean backups inside a specific subfolder (e.g. database, others)}';
 
     protected $description = 'Remove expired backups from Google Drive according to retention policy.';
 
@@ -30,7 +29,7 @@ class BackupCleanCommand extends Command
         $config       = (array) config('google-drive-backup', []);
         $googleConfig = (array) ($config['google'] ?? []);
         $dryRun       = (bool) $this->option('dry-run');
-        $policyName   = (string) $this->option('policy');
+        $policyName   = 'default';
         $subfolder    = $this->option('subfolder') ?: null;
 
         try {

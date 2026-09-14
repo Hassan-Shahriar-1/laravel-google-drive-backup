@@ -33,7 +33,6 @@ php artisan backup:google-drive [options]
 | `--connection=` | Database connection (`mysql`, `mariadb`, `pgsql`, `sqlite`, `sqlsrv`). Defaults to `DB_CONNECTION` in `.env` |
 | `--subfolder=` | Destination subfolder path (supports `{year}`, `{month}`, `{day}`, `{date}`, `{type}`). If omitted, uploads to root folder |
 | `--by-type` | Automatically store in a subfolder named after the backup type (e.g. `database/`) |
-| `--policy=default` | Named policy to use |
 | `--force` | Run even if backups are disabled |
 | `--no-verify` | Skip post-upload verification |
 
@@ -111,7 +110,6 @@ php artisan backup:google-drive:clean [options]
 | Option | Description |
 |--------|-------------|
 | `--dry-run` | Preview deletions without executing |
-| `--policy=default` | Named policy to use for retention rules |
 | `--subfolder=` | Clean backups inside a specific subfolder (e.g. `database`, `others`) |
 
 > Always run with `--dry-run` first before executing a real cleanup.

@@ -43,7 +43,6 @@ class BackupListCommand extends Command
                     $artifact->type,
                     $artifact->createdAt?->format('Y-m-d H:i') ?? '-',
                     $artifact->formattedSize(),
-                    $artifact->metadata?->policy ?? '-',
                 ];
             }
 
@@ -53,7 +52,7 @@ class BackupListCommand extends Command
             }
 
             $this->table(
-                ['ID', 'Filename', 'Folder', 'Type', 'Created (UTC)', 'Size', 'Policy'],
+                ['ID', 'Filename', 'Folder', 'Type', 'Created (UTC)', 'Size'],
                 $rows
             );
 

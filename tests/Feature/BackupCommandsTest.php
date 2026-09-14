@@ -27,13 +27,13 @@ class BackupCommandsTest extends TestCase
             ->assertSuccessful();
     }
 
-    public function test_backup_run_with_invalid_policy_fails(): void
+    public function test_backup_run_fails_gracefully_without_credentials(): void
     {
-        config()->set('google-drive-backup.google.client_id', 'id');
-        config()->set('google-drive-backup.google.client_secret', 'secret');
-        config()->set('google-drive-backup.google.refresh_token', 'token');
+        config()->set('google-drive-backup.google.client_id', null);
+        config()->set('google-drive-backup.google.client_secret', null);
+        config()->set('google-drive-backup.google.refresh_token', null);
 
-        $this->artisan('backup:google-drive', ['--policy' => 'nonexistent'])
+        $this->artisan('backup:google-drive', ['--force' => true])
             ->assertFailed();
     }
 
