@@ -39,6 +39,7 @@ class BackupListCommand extends Command
                 $rows[] = [
                     substr($artifact->id ?? '-', 0, 20),
                     $artifact->filename,
+                    $artifact->subfolder ?? '[root]',
                     $artifact->type,
                     $artifact->createdAt?->format('Y-m-d H:i') ?? '-',
                     $artifact->formattedSize(),
@@ -52,7 +53,7 @@ class BackupListCommand extends Command
             }
 
             $this->table(
-                ['ID', 'Filename', 'Type', 'Created (UTC)', 'Size', 'Policy'],
+                ['ID', 'Filename', 'Folder', 'Type', 'Created (UTC)', 'Size', 'Policy'],
                 $rows
             );
 

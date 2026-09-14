@@ -15,7 +15,7 @@ return [
     | Use Case: Set to false in .env.testing or staging to suppress backups.
     |
     */
-    'enabled' => env('GOOGLE_DRIVE_BACKUP_ENABLED', true),
+    'enabled' => (bool) env('GOOGLE_DRIVE_BACKUP_ENABLED', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -39,36 +39,17 @@ return [
     |--------------------------------------------------------------------------
     |
     | database_connection: The database connection to dump.
+    | Automatically defaults to standard DB_CONNECTION from .env or
+    | config('database.default'). Can be overridden with --connection=<name>.
     | Supported drivers: mysql, mariadb, pgsql, sqlite, sqlsrv.
-    | Order of precedence: --connection flag -> GOOGLE_DRIVE_BACKUP_DB_CONNECTION
-    |                   -> DB_CONNECTION -> config('database.default').
     |
-    | default_type: Backup type when no flags (--db, --files, --full) are passed.
-    | Options: 'database', 'files', 'full'. Default: 'database'.
+    | default_type: Default mode when none of --db, --files, or --full is passed.
+    | Default: 'database'.
     |
     */
-    'database_connection' => env('GOOGLE_DRIVE_BACKUP_DB_CONNECTION', env('DB_CONNECTION')),
+    'database_connection' => env('DB_CONNECTION'),
 
-    'default_type' => env('GOOGLE_DRIVE_BACKUP_TYPE', 'database'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Subfolder Organization
-    |--------------------------------------------------------------------------
-    |
-    | subfolders: When true, organizes backups into environment folders (e.g. "production/").
-    | When false (default), backups are saved directly into the target Drive folder.
-    |
-    | subfolder_by_type: When true, automatically organizes backups into type-specific
-    | subfolders ("database/", "files/", "full/").
-    |
-    | Use Case: Set subfolder_by_type=true if you want Google Drive automatically
-    | organized into clean subdirectories without passing --subfolder each time.
-    |
-    */
-    'subfolders' => env('GOOGLE_DRIVE_BACKUP_SUBFOLDERS', false),
-
-    'subfolder_by_type' => env('GOOGLE_DRIVE_BACKUP_SUBFOLDER_BY_TYPE', false),
+    'default_type' => 'database',
 
     /*
     |--------------------------------------------------------------------------
@@ -82,7 +63,6 @@ return [
     | - refresh_token: Generated via `php artisan backup:google-drive:refresh-token`.
     | - folder_id: Direct ID from Google Drive URL (leave empty to auto-create).
     | - folder_name: Name of auto-created folder if folder_id is not specified.
-    | - shared_drive_id: ID of Google Shared Drive (Team Drive), if applicable.
     |
     */
     'google' => [
@@ -91,7 +71,6 @@ return [
         'refresh_token' => env('GOOGLE_DRIVE_REFRESH_TOKEN'),
         'folder_id' => env('GOOGLE_DRIVE_BACKUP_FOLDER_ID'),
         'folder_name' => env('GOOGLE_DRIVE_BACKUP_FOLDER_NAME', 'Laravel Backups'),
-        'shared_drive_id' => env('GOOGLE_DRIVE_SHARED_DRIVE_ID'),
     ],
 
     /*
@@ -102,7 +81,7 @@ return [
     | Template format for naming backup archive files.
     | Available tokens: {app}, {env}, {type}, {date}, {time}, {uuid}
     |
-    | Use Case: Customize file naming pattern to comply with enterprise backup conventions.
+    | Use Case: Customize file naming pattern to comply with backup conventions.
     |
     */
     'filename' => [
@@ -118,38 +97,16 @@ return [
     |
     */
     'backup' => [
-        'database' => env('GOOGLE_DRIVE_BACKUP_INCLUDE_DATABASE', true),
-        'files' => env('GOOGLE_DRIVE_BACKUP_INCLUDE_FILES', true),
+        'database' => true,
+        'files' => true,
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Compression & Encryption
+    | Post-Upload Verification Strategy
     |--------------------------------------------------------------------------
     |
-    | Backups are compressed into ZIP archives. Optional AES encryption encrypts
-    | archives before upload for HIPAA, GDPR, or SOC-2 compliance.
-    |
-    | Use Case: Enable encryption with a 32-character key for sensitive customer data.
-    |
-    */
-    'compression' => [
-        'enabled' => env('GOOGLE_DRIVE_BACKUP_COMPRESSION_ENABLED', true),
-        'format' => env('GOOGLE_DRIVE_BACKUP_COMPRESSION_FORMAT', 'zip'),
-    ],
-
-    'encryption' => [
-        'enabled' => env('GOOGLE_DRIVE_BACKUP_ENCRYPTION_ENABLED', false),
-        'cipher' => env('GOOGLE_DRIVE_BACKUP_ENCRYPTION_CIPHER', 'aes-256-cbc'),
-        'key' => env('GOOGLE_DRIVE_BACKUP_ENCRYPTION_KEY'),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Verification Strategy
-    |--------------------------------------------------------------------------
-    |
-    | Post-upload verification mode applied immediately after upload:
+    | Verification mode applied immediately after upload:
     | - 'none': Skip post-upload check.
     | - 'metadata': Verify file exists on Drive, is non-empty, and matches file size.
     | - 'checksum': Verify Google Drive MD5 checksum against local MD5.
@@ -157,9 +114,9 @@ return [
     |
     */
     'verification' => [
-        'enabled' => env('GOOGLE_DRIVE_BACKUP_VERIFY_ENABLED', true),
+        'enabled' => true,
         'mode' => env('GOOGLE_DRIVE_BACKUP_VERIFY_MODE', 'metadata'),
-        'checksum' => env('GOOGLE_DRIVE_BACKUP_VERIFY_CHECKSUM', 'sha256'),
+        'checksum' => 'sha256',
     ],
 
     /*
@@ -183,22 +140,6 @@ return [
         'daily'   => (int) env('GOOGLE_DRIVE_BACKUP_RETENTION_DAILY', 30),
         'weekly'  => (int) env('GOOGLE_DRIVE_BACKUP_RETENTION_WEEKLY', 8),
         'monthly' => (int) env('GOOGLE_DRIVE_BACKUP_RETENTION_MONTHLY', 12),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Logging Channel
-    |--------------------------------------------------------------------------
-    |
-    | Where backup operations and status events are logged. Sensitive tokens
-    | and credentials are automatically redacted before logging.
-    |
-    | Use Case: Send backup logs to a dedicated 'backups' channel, Slack, or 'stack'.
-    |
-    */
-    'logging' => [
-        'enabled' => env('GOOGLE_DRIVE_BACKUP_LOG_ENABLED', true),
-        'channel' => env('GOOGLE_DRIVE_BACKUP_LOG_CHANNEL', 'stack'),
     ],
 
 ];

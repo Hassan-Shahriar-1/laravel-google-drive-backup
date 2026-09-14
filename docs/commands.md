@@ -29,12 +29,44 @@ php artisan backup:google-drive [options]
 | `--db` | Backup database only (default behavior if no flag passed) |
 | `--files` | Backup application files only |
 | `--full` | Backup both database and application files |
+| `--path=` | Specific directory or file path(s) to backup (relative to root). Comma-separated or repeatable |
 | `--connection=` | Database connection (`mysql`, `mariadb`, `pgsql`, `sqlite`, `sqlsrv`). Defaults to `DB_CONNECTION` in `.env` |
 | `--subfolder=` | Destination subfolder path (supports `{year}`, `{month}`, `{day}`, `{date}`, `{type}`). If omitted, uploads to root folder |
 | `--by-type` | Automatically store in a subfolder named after the backup type (e.g. `database/`) |
 | `--policy=default` | Named policy to use |
 | `--force` | Run even if backups are disabled |
 | `--no-verify` | Skip post-upload verification |
+
+### Examples
+
+```bash
+# Back up database only (default — uploads to Google Drive root folder)
+php artisan backup:google-drive --db
+
+# Back up database into a specific Google Drive subfolder:
+php artisan backup:google-drive --db --subfolder=database
+
+# Back up all application files
+php artisan backup:google-drive --files
+
+# Back up a specific folder (e.g. uploaded images):
+php artisan backup:google-drive --files --path="storage/app/public/images"
+
+# Back up a specific folder directly into an "images" subfolder on Google Drive:
+php artisan backup:google-drive --path="storage/app/public/images" --subfolder=images
+
+# Back up into dynamic date-based subfolders on Google Drive (e.g. 2026/09):
+php artisan backup:google-drive --db --subfolder="{year}/{month}"
+
+# Auto-organize by type (creates "database/", "files/", or "full/" on Drive):
+php artisan backup:google-drive --db --by-type
+
+# Back up multiple folders:
+php artisan backup:google-drive --path="storage/app/public,public/uploads"
+
+# Back up both database and full files
+php artisan backup:google-drive --full
+```
 
 ---
 
@@ -50,16 +82,21 @@ php artisan backup:google-drive:test
 
 ## `backup:google-drive:list`
 
-List all backups currently stored on Google Drive.
+List backups currently stored on Google Drive. By default, it automatically lists backups from both the **root folder and any subfolders** (e.g. `database/`, `images/`), displaying the folder location in a `Folder` column.
 
 ```bash
-php artisan backup:google-drive:list [options]
+# List all backups across root and subfolders:
+php artisan backup:google-drive:list
+
+# Filter and list backups only from a specific subfolder:
+php artisan backup:google-drive:list --subfolder=database
+php artisan backup:google-drive:list --subfolder=images
 ```
 
 | Option | Description |
 |--------|-------------|
 | `--folder=` | Override the target Google Drive root folder ID |
-| `--subfolder=` | List backups from a specific subfolder (e.g. `database`, `others`) |
+| `--subfolder=` | Filter to only list backups from a specific subfolder (e.g. `database`, `images`) |
 
 ---
 

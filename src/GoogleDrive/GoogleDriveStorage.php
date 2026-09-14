@@ -65,14 +65,33 @@ class GoogleDriveStorage implements BackupStorage
         if (!empty($subfolder)) {
             $segments = array_filter(explode('/', str_replace('\\', '/', $subfolder)));
             $targetFolderId = $this->folderManager->resolveSubfolderPath($rootFolderId, $segments);
-        } else {
-            $targetFolderId = $rootFolderId;
+
+            $files = $this->fileManager->listFiles($targetFolderId);
+            foreach ($files as $file) {
+                $artifact = $this->fileManager->driveFileToArtifact($file);
+                $artifact->subfolder = $subfolder;
+                yield $artifact;
+            }
+            return;
         }
 
-        $files = $this->fileManager->listFiles($targetFolderId);
-
+        // 1. Files in root folder
+        $files = $this->fileManager->listFiles($rootFolderId);
         foreach ($files as $file) {
-            yield $this->fileManager->driveFileToArtifact($file);
+            $artifact = $this->fileManager->driveFileToArtifact($file);
+            $artifact->subfolder = null;
+            yield $artifact;
+        }
+
+        // 2. Discover files in immediate subfolders under root
+        $subfolders = $this->folderManager->listSubfolders($rootFolderId);
+        foreach ($subfolders as $subName => $subId) {
+            $subFiles = $this->fileManager->listFiles($subId);
+            foreach ($subFiles as $file) {
+                $artifact = $this->fileManager->driveFileToArtifact($file);
+                $artifact->subfolder = $subName;
+                yield $artifact;
+            }
         }
     }
 

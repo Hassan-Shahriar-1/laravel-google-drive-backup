@@ -32,7 +32,6 @@ class BackupRestoreCommand extends Command
         $dbRestore    = (bool) $this->option('db-restore');
         $connection   = $this->option('connection')
             ?: config('google-drive-backup.database_connection')
-            ?: env('GOOGLE_DRIVE_BACKUP_DB_CONNECTION')
             ?: env('DB_CONNECTION')
             ?: config('database.default');
         $force = (bool) $this->option('force');

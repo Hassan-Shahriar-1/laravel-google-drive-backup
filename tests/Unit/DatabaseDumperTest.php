@@ -24,6 +24,26 @@ class DatabaseDumperTest extends TestCase
         $dumper->dumpToZip(sys_get_temp_dir() . '/test.zip', 'oracle_test');
     }
 
+    public function test_throws_exception_when_no_connection_specified(): void
+    {
+        config()->set('database.default', null);
+
+        $this->expectException(GoogleDriveBackupException::class);
+        $this->expectExceptionMessage('No database connection specified');
+
+        $dumper = new DatabaseDumper();
+        $dumper->dumpToZip(sys_get_temp_dir() . '/test.zip', null);
+    }
+
+    public function test_throws_exception_when_connection_not_defined_in_config(): void
+    {
+        $this->expectException(GoogleDriveBackupException::class);
+        $this->expectExceptionMessage('Database connection [unknown_db] is not defined in config/database.php');
+
+        $dumper = new DatabaseDumper();
+        $dumper->dumpToZip(sys_get_temp_dir() . '/test.zip', 'unknown_db');
+    }
+
     public function test_dumps_sqlite_database_successfully(): void
     {
         $sqlitePath = tempnam(sys_get_temp_dir(), 'test_db_') . '.sqlite';

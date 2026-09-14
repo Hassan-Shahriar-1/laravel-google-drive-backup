@@ -91,5 +91,66 @@ class BackupCommandsTest extends TestCase
         $this->artisan('backup:google-drive', ['--full' => true])
             ->expectsOutputToContain('disabled')
             ->assertSuccessful();
+
+        $this->artisan('backup:google-drive', ['--path' => ['storage/app/public/images']])
+            ->expectsOutputToContain('disabled')
+            ->assertSuccessful();
+    }
+
+    public function test_create_files_backup_archives_only_specified_paths(): void
+    {
+        $command = new \HassanShahriar\GoogleDriveBackup\Commands\BackupRunCommand();
+        $command->setOutput(new \Illuminate\Console\OutputStyle(
+            new \Symfony\Component\Console\Input\ArrayInput([]),
+            new \Symfony\Component\Console\Output\BufferedOutput()
+        ));
+        $refMethod = new \ReflectionMethod($command, 'createFilesBackup');
+        $refMethod->setAccessible(true);
+
+        $tmpDir = sys_get_temp_dir() . '/test_backup_paths_' . uniqid();
+        mkdir($tmpDir . '/images', 0777, true);
+        file_put_contents($tmpDir . '/images/photo.jpg', 'fake-image-content');
+        file_put_contents($tmpDir . '/ignored.txt', 'ignored');
+
+        $zipPath = sys_get_temp_dir() . '/test_out_' . uniqid() . '.zip';
+
+        // Call with custom path
+        $refMethod->invoke($command, $zipPath, [$tmpDir . '/images']);
+
+        $this->assertFileExists($zipPath);
+
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($zipPath));
+        $this->assertSame('fake-image-content', $zip->getFromName('images/photo.jpg'));
+        $this->assertFalse($zip->locateName('ignored.txt'));
+        $zip->close();
+
+        @unlink($zipPath);
+        @unlink($tmpDir . '/images/photo.jpg');
+        @rmdir($tmpDir . '/images');
+        @unlink($tmpDir . '/ignored.txt');
+        @rmdir($tmpDir);
+    }
+
+    public function test_create_files_backup_throws_when_paths_not_found(): void
+    {
+        $command = new \HassanShahriar\GoogleDriveBackup\Commands\BackupRunCommand();
+        $command->setOutput(new \Illuminate\Console\OutputStyle(
+            new \Symfony\Component\Console\Input\ArrayInput([]),
+            new \Symfony\Component\Console\Output\BufferedOutput()
+        ));
+        $refMethod = new \ReflectionMethod($command, 'createFilesBackup');
+        $refMethod->setAccessible(true);
+
+        $zipPath = sys_get_temp_dir() . '/test_empty_' . uniqid() . '.zip';
+
+        $this->expectException(\HassanShahriar\GoogleDriveBackup\Exceptions\GoogleDriveBackupException::class);
+        $this->expectExceptionMessage('No files found to archive in specified path(s)');
+
+        try {
+            $refMethod->invoke($command, $zipPath, ['non_existent_folder_path_xyz_123']);
+        } finally {
+            @unlink($zipPath);
+        }
     }
 }

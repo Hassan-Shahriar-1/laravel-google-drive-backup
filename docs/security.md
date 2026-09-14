@@ -15,20 +15,10 @@
 - Application names are sanitized before use in filenames (only `a-z`, `0-9`, `-`, `_` are permitted).
 - This prevents path traversal attacks.
 
-## Encryption
+## Encryption at Rest & in Transit
 
-Optional AES-256-CBC encryption is available:
-
-```php
-'encryption' => [
-    'enabled' => true,
-    'cipher'  => 'aes-256-cbc',
-    'key'     => env('GOOGLE_DRIVE_BACKUP_ENCRYPTION_KEY'),
-],
-```
-
-- Encryption keys must **never** be stored on Google Drive alongside the encrypted backup.
-- Keys must come from a secure environment configuration system.
+- **At Rest:** Google Drive automatically encrypts all uploaded data at rest using Google's AES-256 standard encryption on their secure cloud infrastructure.
+- **In Transit:** All API communication with Google Drive is encrypted using TLS/HTTPS. No plaintext transfers occur.
 
 ## Restore Safety
 

@@ -18,7 +18,8 @@ class BackupArtifact
         public int $size = 0,
         public ?string $checksum = null,
         public ?string $storageLocation = null, // e.g. Google Drive file ID
-        public ?BackupMetadata $metadata = null
+        public ?BackupMetadata $metadata = null,
+        public ?string $subfolder = null
     ) {
         $this->createdAt ??= new DateTimeImmutable('now', new \DateTimeZone('UTC'));
         $this->metadata ??= new BackupMetadata(

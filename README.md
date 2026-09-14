@@ -68,30 +68,17 @@ GOOGLE_DRIVE_CLIENT_SECRET=your-client-secret
 GOOGLE_DRIVE_REFRESH_TOKEN=your-refresh-token
 
 # ── Target Google Drive Folder (Optional) ───────────────────────────
-GOOGLE_DRIVE_BACKUP_FOLDER_ID=                   # Specific folder ID from Drive URL (leave blank to auto-create)
+GOOGLE_DRIVE_BACKUP_FOLDER_ID=                   # Specific folder ID from Drive URL (leave blank to auto-use)
 GOOGLE_DRIVE_BACKUP_FOLDER_NAME="Laravel Backups" # Name used if folder ID is empty
-GOOGLE_DRIVE_SHARED_DRIVE_ID=                    # Optional: Shared Drive (Team Drive) ID
-
-# ── Database & Default Backup Type (Optional) ───────────────────────
-GOOGLE_DRIVE_BACKUP_DB_CONNECTION=mysql          # mysql, mariadb, pgsql, sqlite, sqlsrv (defaults to DB_CONNECTION)
-GOOGLE_DRIVE_BACKUP_TYPE=database                # Default backup type when no flag passed: database | files | full
-
-# ── Subfolder Organization (Optional) ───────────────────────────────
-GOOGLE_DRIVE_BACKUP_SUBFOLDERS=false             # When true, nests into environment folder (e.g. production/)
-GOOGLE_DRIVE_BACKUP_SUBFOLDER_BY_TYPE=false      # When true, auto-organizes into database/, files/, full/
 
 # ── Retention Policy Rules (Optional) ───────────────────────────────
-GOOGLE_DRIVE_BACKUP_RETENTION_DAILY=30           # Number of daily backups to keep (keeps all intra-day for latest day)
+GOOGLE_DRIVE_BACKUP_RETENTION_DAILY=30           # Number of daily backups to keep (all intraday for latest day)
 GOOGLE_DRIVE_BACKUP_RETENTION_WEEKLY=8           # Number of weekly backups to keep (1 per week)
 GOOGLE_DRIVE_BACKUP_RETENTION_MONTHLY=12         # Number of monthly backups to keep (1 per month)
 
-# ── Encryption & Security (Optional) ────────────────────────────────
-GOOGLE_DRIVE_BACKUP_ENCRYPTION_ENABLED=false     # Enable AES-256-CBC encryption
-GOOGLE_DRIVE_BACKUP_ENCRYPTION_KEY=              # 32-character encryption key (never commit to Git)
-
 # ── General Settings (Optional) ─────────────────────────────────────
 GOOGLE_DRIVE_BACKUP_ENABLED=true                 # Set false to disable backups in local/staging
-GOOGLE_DRIVE_BACKUP_LOG_CHANNEL=stack            # Log channel (stack, single, daily, slack, etc.)
+GOOGLE_DRIVE_BACKUP_VERIFY_MODE=metadata         # metadata | checksum | full-download | none
 ```
 
 Full configuration reference: [docs/configuration.md](docs/configuration.md)
@@ -145,10 +132,9 @@ php artisan backup:google-drive --db --connection=pgsql
 php artisan backup:google-drive --db --connection=sqlsrv
 php artisan backup:google-drive --db --connection=sqlite
 
-# If --connection is NOT passed, it automatically resolves in order:
-# 1. GOOGLE_DRIVE_BACKUP_DB_CONNECTION from .env
-# 2. DB_CONNECTION from .env
-# 3. config('database.default')
+# If --connection is NOT passed, it automatically resolves:
+# 1. DB_CONNECTION from .env
+# 2. config('database.default')
 ```
 
 ### Database Restore
@@ -189,22 +175,46 @@ php artisan backup:google-drive --db
 
 ### 2. Auto-organize by Backup Type (`--by-type`)
 ```bash
-# Automatically creates and uploads into "database/", "files/", or "full/"
+# Automatically uploads into "database/", "files/", or "full/" subfolder:
 php artisan backup:google-drive --db --by-type
 ```
-Or enable it globally in `.env`:
-```env
-GOOGLE_DRIVE_BACKUP_SUBFOLDER_BY_TYPE=true
-```
 
-### 3. Listing & Cleaning Specific Subfolders
+### 3. Listing Backups (Root and Subfolders)
 ```bash
-# List backups only in the database subfolder
+# List all backups across root and all subfolders:
+php artisan backup:google-drive:list
+
+# Filter list to only a specific subfolder:
 php artisan backup:google-drive:list --subfolder=database
 
-# Clean expired backups in the database subfolder
+# Clean expired backups in a specific subfolder:
 php artisan backup:google-drive:clean --subfolder=database --dry-run
 ```
+
+---
+
+## Backing Up Specific Folders or Files (`--path`)
+
+By default, `--files` archives your entire application (excluding `vendor`, `node_modules`, `.git`, etc.).
+If you only need to back up specific folders (such as uploaded images, documents, or media), use the `--path` option:
+
+```bash
+# Back up only the images folder:
+php artisan backup:google-drive --files --path="storage/app/public/images"
+
+# Back up only images and store them in an "images" subfolder on Google Drive:
+php artisan backup:google-drive --path="storage/app/public/images" --subfolder=images
+
+# Back up multiple folders (comma-separated or repeatable):
+php artisan backup:google-drive --files --path="storage/app/public/images,public/uploads"
+php artisan backup:google-drive --files --path="storage/app/public" --path="public/uploads"
+
+# Back up specific files:
+php artisan backup:google-drive --files --path=".env" --path="composer.json"
+```
+
+> **Note:** If `--path` is passed, the backup type automatically defaults to `files` without needing to pass `--files` explicitly.
+
 
 ---
 
@@ -323,7 +333,6 @@ vendor/bin/phpunit
 | Package | Laravel | PHP  |
 |---------|---------|------|
 | 2.x     | 10.x / 11.x / 12.x / 13.x+ | 8.3+ |
-| 1.x     | 11.x / 12.x | 8.3+ |
 
 ---
 

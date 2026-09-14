@@ -1,8 +1,8 @@
 # Upgrading
 
-## From 1.x to 2.x (future)
+## Upgrading to 2.x
 
-No breaking changes are planned for 1.x. This guide will be updated when a major version is released.
+Version 2.x introduces direct `--db`, `--files`, and `--full` flags, dynamic path targeting via `--path`, automatic database connection detection (including SQL Server `sqlsrv`), and multi-tier calendar retention.
 
 ## General Upgrade Steps
 

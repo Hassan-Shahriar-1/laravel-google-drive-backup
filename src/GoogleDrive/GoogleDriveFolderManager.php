@@ -17,8 +17,7 @@ class GoogleDriveFolderManager
     public function __construct(
         protected GoogleDriveClient $client,
         protected array $config = []
-    ) {
-    }
+    ) {}
 
     protected function getService(): GoogleDriveService
     {
@@ -177,5 +176,35 @@ class GoogleDriveFolderManager
         }
 
         return $currentParentId;
+    }
+
+    /**
+     * List all immediate subfolders under a parent folder ID.
+     *
+     * @return array<string, string> [folderName => folderId]
+     */
+    public function listSubfolders(string $parentId): array
+    {
+        $query = "mimeType = '" . self::MIME_TYPE_FOLDER . "' and trashed = false and '{$parentId}' in parents";
+
+        $optParams = [
+            'q' => $query,
+            'spaces' => 'drive',
+            'fields' => 'files(id, name)',
+            'pageSize' => 100,
+            'supportsAllDrives' => true,
+            'includeItemsFromAllDrives' => true,
+        ];
+
+        try {
+            $results = $this->getService()->files->listFiles($optParams);
+            $subfolders = [];
+            foreach ($results->getFiles() as $folder) {
+                $subfolders[(string) $folder->getName()] = (string) $folder->getId();
+            }
+            return $subfolders;
+        } catch (Throwable $e) {
+            return [];
+        }
     }
 }

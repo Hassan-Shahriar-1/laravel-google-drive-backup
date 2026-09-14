@@ -18,9 +18,20 @@ class DatabaseDumper
      */
     public function dumpToZip(string $zipPath, ?string $connection = null): void
     {
-        $connection = $connection ?? Config::get('database.default');
-        $dbConfig   = (array) Config::get("database.connections.{$connection}", []);
-        $driver     = (string) ($dbConfig['driver'] ?? 'mysql');
+        $connection = $connection ?: Config::get('database.default');
+
+        if (empty($connection)) {
+            throw new GoogleDriveBackupException('No database connection specified. Please set DB_CONNECTION in your .env or pass --connection=<driver>.');
+        }
+
+        $allConnections = (array) Config::get('database.connections', []);
+        if (!isset($allConnections[$connection])) {
+            $available = implode(', ', array_keys($allConnections));
+            throw new GoogleDriveBackupException("Database connection [{$connection}] is not defined in config/database.php. Available connections: [{$available}].");
+        }
+
+        $dbConfig = (array) $allConnections[$connection];
+        $driver   = (string) ($dbConfig['driver'] ?? $connection);
 
         $sqlDumpPath = $zipPath . '.sql';
 

@@ -12,6 +12,7 @@ use HassanShahriar\GoogleDriveBackup\Events\BackupFailed;
 use HassanShahriar\GoogleDriveBackup\Events\BackupStarted;
 use HassanShahriar\GoogleDriveBackup\Events\BackupUploaded;
 use HassanShahriar\GoogleDriveBackup\Events\BackupVerified;
+use HassanShahriar\GoogleDriveBackup\Exceptions\GoogleDriveBackupException;
 use HassanShahriar\GoogleDriveBackup\GoogleDrive\GoogleDriveClient;
 use HassanShahriar\GoogleDriveBackup\GoogleDrive\GoogleDriveFileManager;
 use HassanShahriar\GoogleDriveBackup\GoogleDrive\GoogleDriveFolderManager;
@@ -33,6 +34,7 @@ class BackupRunCommand extends Command
                             {--db                : Backup database only}
                             {--files             : Backup application files only}
                             {--full              : Backup both database and files}
+                            {--path=*            : Specific directory or file path(s) to backup (relative to application root)}
                             {--connection=       : Database connection (sqlsrv, pgsql, mariadb, mysql, sqlite)}
                             {--subfolder=        : Specific subfolder to upload into (e.g. database, others, or nested a/b)}
                             {--by-type           : Store in subfolder named after backup type (e.g. database/)}
@@ -48,10 +50,9 @@ class BackupRunCommand extends Command
         $policyName = (string) $this->option('policy');
         $noVerify   = (bool) $this->option('no-verify');
 
-        // Resolve connection (CLI option -> config -> GOOGLE_DRIVE_BACKUP_DB_CONNECTION -> DB_CONNECTION -> default)
+        // Resolve connection (CLI option -> config -> DB_CONNECTION -> default)
         $connection = $this->option('connection')
             ?: config('google-drive-backup.database_connection')
-            ?: env('GOOGLE_DRIVE_BACKUP_DB_CONNECTION')
             ?: env('DB_CONNECTION')
             ?: config('database.default');
 
@@ -67,6 +68,20 @@ class BackupRunCommand extends Command
             $policyMgr = new BackupPolicyManager($config);
             $policy    = $policyMgr->resolve($policyName);
 
+            // ── Resolve custom path(s) ───────────────────────────────────────
+            $rawPaths = (array) $this->option('path');
+            $customPaths = [];
+            foreach ($rawPaths as $rp) {
+                if (is_string($rp)) {
+                    foreach (explode(',', $rp) as $p) {
+                        $p = trim($p);
+                        if ($p !== '') {
+                            $customPaths[] = $p;
+                        }
+                    }
+                }
+            }
+
             // ── Resolve backup type ───────────────────────────────────────────
             if ($this->option('full') || ($this->option('db') && $this->option('files'))) {
                 $type = 'full';
@@ -74,6 +89,8 @@ class BackupRunCommand extends Command
                 $type = 'files';
             } elseif ($this->option('db')) {
                 $type = 'database';
+            } elseif (!empty($customPaths)) {
+                $type = 'files';
             } elseif ($policy->type() !== 'full') {
                 $type = $policy->type();
             } else {
@@ -92,7 +109,7 @@ class BackupRunCommand extends Command
 
             // ── Create the backup archive ─────────────────────────────────────
             $tmpPath = $tmpManager->create('gdrive-backup-', '.zip');
-            $this->createBackupArchive($tmpPath, $type, $connection);
+            $this->createBackupArchive($tmpPath, $type, $connection, $customPaths);
 
             $size     = (int) filesize($tmpPath);
             $checksum = (string) hash_file('sha256', $tmpPath);
@@ -131,7 +148,7 @@ class BackupRunCommand extends Command
             $subfolderOption = $this->option('subfolder');
             $subfolder = !empty($subfolderOption) ? (string) $subfolderOption : null;
 
-            if ($subfolder === null && ($this->option('by-type') || (bool) ($config['subfolder_by_type'] ?? false))) {
+            if ($subfolder === null && $this->option('by-type')) {
                 $subfolder = $type; // e.g. 'database', 'files', 'full'
             }
 
@@ -194,14 +211,15 @@ class BackupRunCommand extends Command
     /**
      * Create the backup archive at $zipPath based on type.
      *
+     * @param array<string> $paths
      * @throws \HassanShahriar\GoogleDriveBackup\Exceptions\GoogleDriveBackupException
      */
-    private function createBackupArchive(string $zipPath, string $type, ?string $connection): void
+    private function createBackupArchive(string $zipPath, string $type, ?string $connection, array $paths = []): void
     {
         match ($type) {
             'database' => $this->createDatabaseBackup($zipPath, $connection),
-            'files'    => $this->createFilesBackup($zipPath),
-            'full'     => $this->createFullBackup($zipPath, $connection),
+            'files'    => $this->createFilesBackup($zipPath, $paths),
+            'full'     => $this->createFullBackup($zipPath, $connection, $paths),
             default    => $this->createDatabaseBackup($zipPath, $connection),
         };
     }
@@ -217,19 +235,82 @@ class BackupRunCommand extends Command
         $this->line("  ✓ Database dump complete [{$conn} / {$driver}].");
     }
 
-    private function createFilesBackup(string $zipPath): void
+    /**
+     * @param array<string> $paths
+     * @throws \HassanShahriar\GoogleDriveBackup\Exceptions\GoogleDriveBackupException
+     */
+    private function createFilesBackup(string $zipPath, array $paths = []): void
     {
-        $this->line('  Archiving application files...');
         $zip = new ZipArchive();
         $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-
         $basePath = base_path();
+        $excluded = ['vendor', 'node_modules', '.git', 'storage/logs', 'storage/framework/cache'];
+
+        if (!empty($paths)) {
+            $this->line('  Archiving specified path(s)...');
+            $filesAdded = 0;
+
+            foreach ($paths as $target) {
+                $target = trim($target);
+                $fullPath = str_starts_with($target, DIRECTORY_SEPARATOR)
+                    ? $target
+                    : $basePath . DIRECTORY_SEPARATOR . ltrim($target, '/\\');
+
+                if (!file_exists($fullPath)) {
+                    $this->warn("  Path [{$target}] does not exist, skipping.");
+                    continue;
+                }
+
+                if (is_file($fullPath)) {
+                    $relativeInZip = str_starts_with($fullPath, $basePath)
+                        ? ltrim(substr($fullPath, strlen($basePath)), '/\\')
+                        : basename($fullPath);
+                    $zip->addFile($fullPath, $relativeInZip);
+                    $filesAdded++;
+                } elseif (is_dir($fullPath)) {
+                    $iterator = new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($fullPath, \FilesystemIterator::SKIP_DOTS),
+                        \RecursiveIteratorIterator::SELF_FIRST
+                    );
+
+                    foreach ($iterator as $file) {
+                        $pathname = $file->getPathname();
+                        $relativeInZip = str_starts_with($pathname, $basePath)
+                            ? ltrim(substr($pathname, strlen($basePath)), '/\\')
+                            : ltrim(substr($pathname, strlen(dirname($fullPath))), '/\\');
+
+                        // Skip excluded directories
+                        foreach ($excluded as $ex) {
+                            if (str_starts_with($relativeInZip, $ex)) {
+                                continue 2;
+                            }
+                        }
+
+                        if ($file->isDir()) {
+                            $zip->addEmptyDir($relativeInZip);
+                        } elseif ($file->isFile()) {
+                            $zip->addFile($pathname, $relativeInZip);
+                            $filesAdded++;
+                        }
+                    }
+                }
+            }
+
+            $zip->close();
+
+            if ($filesAdded === 0) {
+                throw new GoogleDriveBackupException('No files found to archive in specified path(s): ' . implode(', ', $paths));
+            }
+
+            $this->line("  ✓ Files archive complete ({$filesAdded} file(s) archived).");
+            return;
+        }
+
+        $this->line('  Archiving application files...');
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($basePath, \FilesystemIterator::SKIP_DOTS),
             \RecursiveIteratorIterator::SELF_FIRST
         );
-
-        $excluded = ['vendor', 'node_modules', '.git', 'storage/logs', 'storage/framework/cache'];
 
         foreach ($iterator as $file) {
             $relativePath = str_replace($basePath . DIRECTORY_SEPARATOR, '', $file->getPathname());
@@ -252,7 +333,10 @@ class BackupRunCommand extends Command
         $this->line('  ✓ Files archive complete.');
     }
 
-    private function createFullBackup(string $zipPath, ?string $connection): void
+    /**
+     * @param array<string> $paths
+     */
+    private function createFullBackup(string $zipPath, ?string $connection, array $paths = []): void
     {
         // Create separate archives then combine into one
         $tmpManager = new TemporaryFileManager();
@@ -262,7 +346,7 @@ class BackupRunCommand extends Command
 
         try {
             $this->createDatabaseBackup($dbZip, $connection);
-            $this->createFilesBackup($filesZip);
+            $this->createFilesBackup($filesZip, $paths);
 
             // Merge both into the final ZIP
             $zip = new ZipArchive();
