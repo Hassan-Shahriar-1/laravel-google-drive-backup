@@ -62,11 +62,23 @@ See [docs/google-drive-setup.md](docs/google-drive-setup.md) for step-by-step in
 Add these variables to your `.env`:
 
 ```env
+# Google OAuth 2.0 Credentials (Required)
 GOOGLE_DRIVE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_DRIVE_CLIENT_SECRET=your-client-secret
 GOOGLE_DRIVE_REFRESH_TOKEN=your-refresh-token
-GOOGLE_DRIVE_BACKUP_FOLDER_ID=your-folder-id   # optional, created automatically if omitted
-GOOGLE_DRIVE_BACKUP_FOLDER_NAME="Laravel Backups"
+
+# Target Google Drive Folder
+GOOGLE_DRIVE_BACKUP_FOLDER_ID=              # Optional: specific folder ID
+GOOGLE_DRIVE_BACKUP_FOLDER_NAME="Laravel Backups" # Used if folder ID is empty
+
+# Optional: Default Database Connection & Type
+GOOGLE_DRIVE_BACKUP_DB_CONNECTION=mysql     # Defaults to DB_CONNECTION from .env
+GOOGLE_DRIVE_BACKUP_TYPE=database           # database | files | full
+
+# Optional: Subfolder Organization
+GOOGLE_DRIVE_BACKUP_SUBFOLDER_BY_TYPE=false # Auto-create database/, files/, full/ subfolders
+
+# Optional: General
 GOOGLE_DRIVE_BACKUP_ENABLED=true
 GOOGLE_DRIVE_BACKUP_LOG_CHANNEL=stack
 ```
@@ -136,6 +148,48 @@ php artisan backup:google-drive:restore {FILE_ID} --db-restore
 
 # Restore to a specific database connection
 php artisan backup:google-drive:restore {FILE_ID} --db-restore --connection=pgsql
+```
+
+---
+
+## Subfolder Organization (Folder Separation)
+
+By default, backups are uploaded **directly into the root folder** specified in your `.env` (`GOOGLE_DRIVE_BACKUP_FOLDER_ID` or `GOOGLE_DRIVE_BACKUP_FOLDER_NAME`).
+
+If you want to separate backups into subfolders (e.g. `database/`, `others/`):
+
+### 1. Specify a Subfolder in the Command
+```bash
+# Upload database backup into "database/" subfolder:
+php artisan backup:google-drive --db --subfolder=database
+
+# Upload file backup into "others/" subfolder:
+php artisan backup:google-drive --type=files --subfolder=others
+
+# Upload into nested subfolders (e.g. database/monthly):
+php artisan backup:google-drive --db --subfolder=database/monthly
+
+# If you do NOT pass --subfolder, it uploads directly to your root folder from .env!
+php artisan backup:google-drive --db
+```
+
+### 2. Auto-organize by Backup Type (`--by-type`)
+```bash
+# Automatically creates and uploads into "database/", "files/", or "full/"
+php artisan backup:google-drive --db --by-type
+```
+Or enable it globally in `.env`:
+```env
+GOOGLE_DRIVE_BACKUP_SUBFOLDER_BY_TYPE=true
+```
+
+### 3. Listing & Cleaning Specific Subfolders
+```bash
+# List backups only in the database subfolder
+php artisan backup:google-drive:list --subfolder=database
+
+# Clean expired backups in the database subfolder
+php artisan backup:google-drive:clean --subfolder=database --dry-run
 ```
 
 ---

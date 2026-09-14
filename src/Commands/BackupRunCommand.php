@@ -33,6 +33,8 @@ class BackupRunCommand extends Command
                             {--type=             : Backup type: database | files | full}
                             {--db                : Shortcut to perform database-only backup}
                             {--connection=       : Database connection (sqlsrv, pgsql, mariadb, mysql, sqlite)}
+                            {--subfolder=        : Specific subfolder to upload into (e.g. database, others, or nested a/b)}
+                            {--by-type           : Store in subfolder named after backup type (e.g. database/)}
                             {--force             : Run even if backups are disabled}
                             {--no-verify         : Skip post-upload verification}';
 
@@ -124,8 +126,17 @@ class BackupRunCommand extends Command
             $fileMgr      = new GoogleDriveFileManager($client);
             $storage      = new GoogleDriveStorage($client, $folderMgr, $fileMgr, $config);
 
-            $this->info("Uploading [{$filename}] (" . $artifact->formattedSize() . ") to Google Drive...");
-            $result = $storage->put($artifact);
+            // ── Resolve destination subfolder ────────────────────────────────
+            $subfolderOption = $this->option('subfolder');
+            $subfolder = !empty($subfolderOption) ? (string) $subfolderOption : null;
+
+            if ($subfolder === null && ($this->option('by-type') || (bool) ($config['subfolder_by_type'] ?? false))) {
+                $subfolder = $type; // e.g. 'database', 'files', 'full'
+            }
+
+            $destText = $subfolder !== null ? "[root] / {$subfolder}" : "[root] (folder from .env)";
+            $this->info("Uploading [{$filename}] (" . $artifact->formattedSize() . ") to Google Drive ({$destText})...");
+            $result = $storage->put($artifact, $subfolder);
 
             if (!$result->success) {
                 $this->error('Upload failed: ' . $result->error);

@@ -55,6 +55,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Subfolder By Backup Type
+    |--------------------------------------------------------------------------
+    |
+    | When true, backups are automatically placed into subfolders named after
+    | their type (e.g. "database/", "files/", "full/").
+    | When false (default), backups go directly to the root folder unless
+    | specified on the command line via --subfolder.
+    |
+    */
+    'subfolder_by_type' => env('GOOGLE_DRIVE_BACKUP_SUBFOLDER_BY_TYPE', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Google Drive Credentials & Root Folder
     |--------------------------------------------------------------------------
     |

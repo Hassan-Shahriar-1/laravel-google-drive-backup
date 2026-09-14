@@ -19,13 +19,15 @@ class GoogleDriveStorage implements BackupStorage
         protected array $config = []
     ) {}
 
-    public function put(BackupArtifact $backup): StorageResult
+    public function put(BackupArtifact $backup, ?string $subfolder = null): StorageResult
     {
         try {
             $rootFolderId = $this->folderManager->resolveRootFolderId();
 
-            // Only create environment subfolders if explicitly enabled
-            if ((bool) ($this->config['subfolders'] ?? false)) {
+            if (!empty($subfolder)) {
+                $segments = array_filter(explode('/', str_replace('\\', '/', $subfolder)));
+                $targetFolderId = $this->folderManager->resolveSubfolderPath($rootFolderId, $segments);
+            } elseif ((bool) ($this->config['subfolders'] ?? false)) {
                 $env = sanitize_string_for_path($this->config['environment'] ?? 'production');
                 $targetFolderId = $this->folderManager->resolveSubfolderPath($rootFolderId, [$env]);
             } else {
@@ -56,9 +58,17 @@ class GoogleDriveStorage implements BackupStorage
         }
     }
 
-    public function list(?string $folderId = null): iterable
+    public function list(?string $folderId = null, ?string $subfolder = null): iterable
     {
-        $targetFolderId = $folderId ?? $this->folderManager->resolveRootFolderId();
+        $rootFolderId = $folderId ?? $this->folderManager->resolveRootFolderId();
+
+        if (!empty($subfolder)) {
+            $segments = array_filter(explode('/', str_replace('\\', '/', $subfolder)));
+            $targetFolderId = $this->folderManager->resolveSubfolderPath($rootFolderId, $segments);
+        } else {
+            $targetFolderId = $rootFolderId;
+        }
+
         $files = $this->fileManager->listFiles($targetFolderId);
 
         foreach ($files as $file) {

@@ -23,6 +23,10 @@ Options: `database`, `files`, `full`.
 Whether to organize backups into environment subfolders (e.g. `production/`, `staging/`) inside the Google Drive folder.
 Default: `false` (saves directly in the target folder). Set to `true` to enable.
 
+## `subfolder_by_type`
+When `true`, backups are automatically organized into subfolders named after their type (`database/`, `files/`, `full/`).
+Default: `false` (saves directly in the target folder unless `--subfolder` is passed on the command line).
+
 ## `google`
 
 | Key | Description |

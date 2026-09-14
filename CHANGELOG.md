@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `--db` shortcut option to `backup:google-drive` command.
 - Automated database restoration in `backup:google-drive:restore` with the `--db-restore` flag.
 - Added `subfolders` configuration option (`GOOGLE_DRIVE_BACKUP_SUBFOLDERS`), defaulting to `false` so backups are placed directly into the specified folder without extra nested environment directories.
+- Added `--subfolder=` and `--by-type` options across backup commands, allowing custom subfolder destinations (e.g. `database/`, `others/`) while defaulting to root folder when omitted.
 
 ## [1.0.0] - 2026-09-06
 

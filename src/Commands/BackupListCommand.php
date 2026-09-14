@@ -13,7 +13,8 @@ use Illuminate\Console\Command;
 class BackupListCommand extends Command
 {
     protected $signature = 'backup:google-drive:list
-                            {--folder= : Override the target Google Drive folder ID}';
+                            {--folder=    : Override the target Google Drive folder ID}
+                            {--subfolder= : List backups from a specific subfolder (e.g. database, others)}';
 
     protected $description = 'List all backups stored on Google Drive.';
 
@@ -22,6 +23,7 @@ class BackupListCommand extends Command
         $config       = (array) config('google-drive-backup', []);
         $googleConfig = (array) ($config['google'] ?? []);
         $folderId     = $this->option('folder');
+        $subfolder    = $this->option('subfolder') ?: null;
 
         try {
             $client    = new GoogleDriveClient($googleConfig);
@@ -29,10 +31,11 @@ class BackupListCommand extends Command
             $fileMgr   = new GoogleDriveFileManager($client);
             $storage   = new GoogleDriveStorage($client, $folderMgr, $fileMgr, $config);
 
-            $this->info('Fetching backups from Google Drive...');
+            $targetMsg = $subfolder !== null ? "subfolder [{$subfolder}]" : "root folder";
+            $this->info("Fetching backups from Google Drive ({$targetMsg})...");
 
             $rows = [];
-            foreach ($storage->list($folderId ?: null) as $artifact) {
+            foreach ($storage->list($folderId ?: null, $subfolder) as $artifact) {
                 $rows[] = [
                     substr($artifact->id ?? '-', 0, 20),
                     $artifact->filename,

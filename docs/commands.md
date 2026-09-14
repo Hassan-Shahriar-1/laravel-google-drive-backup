@@ -29,6 +29,8 @@ php artisan backup:google-drive [options]
 | `--type=` | Backup type: `database`, `files`, `full` (defaults to database) |
 | `--db` | Shortcut flag for `--type=database` |
 | `--connection=` | Database connection (`mysql`, `mariadb`, `pgsql`, `sqlite`, `sqlsrv`). Defaults to `DB_CONNECTION` in `.env` |
+| `--subfolder=` | Destination subfolder path (e.g. `database`, `others`, `database/monthly`). If omitted, uploads to root folder |
+| `--by-type` | Automatically store in a subfolder named after the backup type (e.g. `database/`) |
 | `--policy=default` | Named policy to use |
 | `--force` | Run even if backups are disabled |
 | `--no-verify` | Skip post-upload verification |
@@ -50,8 +52,13 @@ php artisan backup:google-drive:test
 List all backups currently stored on Google Drive.
 
 ```bash
-php artisan backup:google-drive:list [--folder=FOLDER_ID]
+php artisan backup:google-drive:list [options]
 ```
+
+| Option | Description |
+|--------|-------------|
+| `--folder=` | Override the target Google Drive root folder ID |
+| `--subfolder=` | List backups from a specific subfolder (e.g. `database`, `others`) |
 
 ---
 
@@ -67,6 +74,7 @@ php artisan backup:google-drive:clean [options]
 |--------|-------------|
 | `--dry-run` | Preview deletions without executing |
 | `--policy=default` | Named policy to use for retention rules |
+| `--subfolder=` | Clean backups inside a specific subfolder (e.g. `database`, `others`) |
 
 > Always run with `--dry-run` first before executing a real cleanup.
 
