@@ -127,4 +127,49 @@ class RetentionCalculatorTest extends TestCase
         $this->assertCount(0, $result->toDelete);
         $this->assertSame(0, $result->summary['total']);
     }
+
+    public function test_keeps_all_intraday_backups_for_latest_day(): void
+    {
+        // 6 backups every 4 hours on latest day (2026-09-06), plus 1 backup from yesterday
+        $backups = [
+            $this->artifact('t1', '2026-09-06 20:00:00'),
+            $this->artifact('t2', '2026-09-06 16:00:00'),
+            $this->artifact('t3', '2026-09-06 12:00:00'),
+            $this->artifact('t4', '2026-09-06 08:00:00'),
+            $this->artifact('t5', '2026-09-06 04:00:00'),
+            $this->artifact('t6', '2026-09-06 00:00:00'),
+            $this->artifact('y1', '2026-09-05 12:00:00'),
+        ];
+
+        $result = $this->calculator->determineBackupsToDelete($backups, ['daily' => 2, 'weekly' => 0, 'monthly' => 0]);
+
+        $keptIds = array_map(fn($b) => $b->id, $result->kept);
+
+        // All 6 intra-day backups from today should be kept
+        foreach (['t1', 't2', 't3', 't4', 't5', 't6', 'y1'] as $id) {
+            $this->assertContains($id, $keptIds);
+        }
+    }
+
+    public function test_evaluates_different_backup_types_independently(): void
+    {
+        // 5 database backups and 1 files backup
+        $db1 = new BackupArtifact(id: 'db1', filename: 'db1.zip', type: 'database', createdAt: new DateTimeImmutable('2026-09-06 02:00:00'));
+        $db2 = new BackupArtifact(id: 'db2', filename: 'db2.zip', type: 'database', createdAt: new DateTimeImmutable('2026-09-05 02:00:00'));
+        $db3 = new BackupArtifact(id: 'db3', filename: 'db3.zip', type: 'database', createdAt: new DateTimeImmutable('2026-09-04 02:00:00'));
+        $file1 = new BackupArtifact(id: 'f1', filename: 'f1.zip', type: 'files', createdAt: new DateTimeImmutable('2026-09-01 02:00:00'));
+
+        $result = $this->calculator->determineBackupsToDelete([$db1, $db2, $db3, $file1], ['daily' => 2, 'weekly' => 0, 'monthly' => 0]);
+
+        $keptIds = array_map(fn($b) => $b->id, $result->kept);
+        $deletedIds = array_map(fn($b) => $b->id, $result->toDelete);
+
+        // Database group kept 2, deleted 1 (db3)
+        $this->assertContains('db1', $keptIds);
+        $this->assertContains('db2', $keptIds);
+        $this->assertContains('db3', $deletedIds);
+
+        // Files backup was preserved in its own group!
+        $this->assertContains('f1', $keptIds);
+    }
 }

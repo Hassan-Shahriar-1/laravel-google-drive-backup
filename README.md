@@ -62,25 +62,36 @@ See [docs/google-drive-setup.md](docs/google-drive-setup.md) for step-by-step in
 Add these variables to your `.env`:
 
 ```env
-# Google OAuth 2.0 Credentials (Required)
+# ── Google OAuth 2.0 Credentials (Required) ─────────────────────────
 GOOGLE_DRIVE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_DRIVE_CLIENT_SECRET=your-client-secret
 GOOGLE_DRIVE_REFRESH_TOKEN=your-refresh-token
 
-# Target Google Drive Folder
-GOOGLE_DRIVE_BACKUP_FOLDER_ID=              # Optional: specific folder ID
-GOOGLE_DRIVE_BACKUP_FOLDER_NAME="Laravel Backups" # Used if folder ID is empty
+# ── Target Google Drive Folder (Optional) ───────────────────────────
+GOOGLE_DRIVE_BACKUP_FOLDER_ID=                   # Specific folder ID from Drive URL (leave blank to auto-create)
+GOOGLE_DRIVE_BACKUP_FOLDER_NAME="Laravel Backups" # Name used if folder ID is empty
+GOOGLE_DRIVE_SHARED_DRIVE_ID=                    # Optional: Shared Drive (Team Drive) ID
 
-# Optional: Default Database Connection & Type
-GOOGLE_DRIVE_BACKUP_DB_CONNECTION=mysql     # Defaults to DB_CONNECTION from .env
-GOOGLE_DRIVE_BACKUP_TYPE=database           # database | files | full
+# ── Database & Default Backup Type (Optional) ───────────────────────
+GOOGLE_DRIVE_BACKUP_DB_CONNECTION=mysql          # mysql, mariadb, pgsql, sqlite, sqlsrv (defaults to DB_CONNECTION)
+GOOGLE_DRIVE_BACKUP_TYPE=database                # Default backup type when no flag passed: database | files | full
 
-# Optional: Subfolder Organization
-GOOGLE_DRIVE_BACKUP_SUBFOLDER_BY_TYPE=false # Auto-create database/, files/, full/ subfolders
+# ── Subfolder Organization (Optional) ───────────────────────────────
+GOOGLE_DRIVE_BACKUP_SUBFOLDERS=false             # When true, nests into environment folder (e.g. production/)
+GOOGLE_DRIVE_BACKUP_SUBFOLDER_BY_TYPE=false      # When true, auto-organizes into database/, files/, full/
 
-# Optional: General
-GOOGLE_DRIVE_BACKUP_ENABLED=true
-GOOGLE_DRIVE_BACKUP_LOG_CHANNEL=stack
+# ── Retention Policy Rules (Optional) ───────────────────────────────
+GOOGLE_DRIVE_BACKUP_RETENTION_DAILY=30           # Number of daily backups to keep (keeps all intra-day for latest day)
+GOOGLE_DRIVE_BACKUP_RETENTION_WEEKLY=8           # Number of weekly backups to keep (1 per week)
+GOOGLE_DRIVE_BACKUP_RETENTION_MONTHLY=12         # Number of monthly backups to keep (1 per month)
+
+# ── Encryption & Security (Optional) ────────────────────────────────
+GOOGLE_DRIVE_BACKUP_ENCRYPTION_ENABLED=false     # Enable AES-256-CBC encryption
+GOOGLE_DRIVE_BACKUP_ENCRYPTION_KEY=              # 32-character encryption key (never commit to Git)
+
+# ── General Settings (Optional) ─────────────────────────────────────
+GOOGLE_DRIVE_BACKUP_ENABLED=true                 # Set false to disable backups in local/staging
+GOOGLE_DRIVE_BACKUP_LOG_CHANNEL=stack            # Log channel (stack, single, daily, slack, etc.)
 ```
 
 Full configuration reference: [docs/configuration.md](docs/configuration.md)
@@ -125,9 +136,9 @@ The package natively dumps and restores all major database drivers used in Larav
 
 ```bash
 # Dump default database (taken automatically from DB_CONNECTION in .env)
-php artisan backup:google-drive --type=database
-# or shortcut:
 php artisan backup:google-drive --db
+# or simply (defaults to database backup):
+php artisan backup:google-drive
 
 # Dump a specific connection defined in config/database.php:
 php artisan backup:google-drive --db --connection=pgsql
@@ -164,10 +175,13 @@ If you want to separate backups into subfolders (e.g. `database/`, `others/`):
 php artisan backup:google-drive --db --subfolder=database
 
 # Upload file backup into "others/" subfolder:
-php artisan backup:google-drive --type=files --subfolder=others
+php artisan backup:google-drive --files --subfolder=others
 
 # Upload into nested subfolders (e.g. database/monthly):
 php artisan backup:google-drive --db --subfolder=database/monthly
+
+# Dynamic date and type tokens in --subfolder (year, month, day, date, type):
+php artisan backup:google-drive --db --subfolder="{year}/{month}"
 
 # If you do NOT pass --subfolder, it uploads directly to your root folder from .env!
 php artisan backup:google-drive --db
@@ -218,25 +232,35 @@ Add to your `routes/console.php` (Laravel 11, 12, 13+):
 ```php
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('backup:google-drive')->dailyAt('02:00');
+// Run database backup every 4 hours
+Schedule::command('backup:google-drive --db')->everyFourHours();
+
+// Run files backup weekly on Sunday
+Schedule::command('backup:google-drive --files')->weeklyOn(0, '02:00');
+
+// Automatically clean expired backups once daily at night
 Schedule::command('backup:google-drive:clean')->dailyAt('03:00');
-Schedule::command('backup:google-drive:verify')->dailyAt('04:00');
+
+// Optionally verify backup integrity
+Schedule::command('backup:google-drive:verify --all')->dailyAt('04:00');
 ```
 
 ---
 
 ## Retention Policy
 
+The retention engine works automatically like Spatie's cleanup strategy — you do not pass dates or intervals on the command line. It reads timestamps on Google Drive and groups backups by type (`database` vs `files`) so frequent database backups never delete file backups.
+
 ```php
 // config/google-drive-backup.php
 'retention' => [
-    'daily'   => 30,   // keep 30 daily backups
-    'weekly'  => 8,    // keep 8 weekly backups (one per week)
-    'monthly' => 12,   // keep 12 monthly backups (one per month)
+    'daily'   => (int) env('GOOGLE_DRIVE_BACKUP_RETENTION_DAILY', 30),   // keep 30 distinct calendar days (all intraday backups for latest day)
+    'weekly'  => (int) env('GOOGLE_DRIVE_BACKUP_RETENTION_WEEKLY', 8),   // keep 8 distinct weeks of backups
+    'monthly' => (int) env('GOOGLE_DRIVE_BACKUP_RETENTION_MONTHLY', 12), // keep 12 distinct months of backups
 ],
 ```
 
-A backup that qualifies for both daily and weekly retention is **not deleted** until it expires from all applicable categories.
+A backup that qualifies for multiple retention tiers (e.g. both daily and weekly) is **never deleted** until it expires from all applicable tiers.
 
 ---
 

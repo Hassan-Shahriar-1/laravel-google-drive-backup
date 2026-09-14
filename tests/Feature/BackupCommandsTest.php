@@ -75,4 +75,21 @@ class BackupCommandsTest extends TestCase
             ->expectsOutputToContain('Missing Google OAuth credentials')
             ->assertFailed();
     }
+
+    public function test_backup_run_command_accepts_db_files_full_flags(): void
+    {
+        config()->set('google-drive-backup.enabled', false);
+
+        $this->artisan('backup:google-drive', ['--db' => true])
+            ->expectsOutputToContain('disabled')
+            ->assertSuccessful();
+
+        $this->artisan('backup:google-drive', ['--files' => true])
+            ->expectsOutputToContain('disabled')
+            ->assertSuccessful();
+
+        $this->artisan('backup:google-drive', ['--full' => true])
+            ->expectsOutputToContain('disabled')
+            ->assertSuccessful();
+    }
 }

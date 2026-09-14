@@ -26,10 +26,11 @@ php artisan backup:google-drive [options]
 
 | Option | Description |
 |--------|-------------|
-| `--type=` | Backup type: `database`, `files`, `full` (defaults to database) |
-| `--db` | Shortcut flag for `--type=database` |
+| `--db` | Backup database only (default behavior if no flag passed) |
+| `--files` | Backup application files only |
+| `--full` | Backup both database and application files |
 | `--connection=` | Database connection (`mysql`, `mariadb`, `pgsql`, `sqlite`, `sqlsrv`). Defaults to `DB_CONNECTION` in `.env` |
-| `--subfolder=` | Destination subfolder path (e.g. `database`, `others`, `database/monthly`). If omitted, uploads to root folder |
+| `--subfolder=` | Destination subfolder path (supports `{year}`, `{month}`, `{day}`, `{date}`, `{type}`). If omitted, uploads to root folder |
 | `--by-type` | Automatically store in a subfolder named after the backup type (e.g. `database/`) |
 | `--policy=default` | Named policy to use |
 | `--force` | Run even if backups are disabled |

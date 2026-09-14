@@ -30,8 +30,9 @@ class BackupRunCommand extends Command
 {
     protected $signature = 'backup:google-drive
                             {--policy=default    : Policy name to use}
-                            {--type=             : Backup type: database | files | full}
-                            {--db                : Shortcut to perform database-only backup}
+                            {--db                : Backup database only}
+                            {--files             : Backup application files only}
+                            {--full              : Backup both database and files}
                             {--connection=       : Database connection (sqlsrv, pgsql, mariadb, mysql, sqlite)}
                             {--subfolder=        : Specific subfolder to upload into (e.g. database, others, or nested a/b)}
                             {--by-type           : Store in subfolder named after backup type (e.g. database/)}
@@ -66,17 +67,17 @@ class BackupRunCommand extends Command
             $policyMgr = new BackupPolicyManager($config);
             $policy    = $policyMgr->resolve($policyName);
 
-            // ── Resolve type ──────────────────────────────────────────────────
-            $typeOption = $this->option('type');
-            if ($this->option('db')) {
+            // ── Resolve backup type ───────────────────────────────────────────
+            if ($this->option('full') || ($this->option('db') && $this->option('files'))) {
+                $type = 'full';
+            } elseif ($this->option('files')) {
+                $type = 'files';
+            } elseif ($this->option('db')) {
                 $type = 'database';
-            } elseif (!empty($typeOption)) {
-                $type = (string) $typeOption;
             } elseif ($policy->type() !== 'full') {
                 $type = $policy->type();
             } else {
-                $type = (string) (config('google-drive-backup.default_type')
-                    ?: (config('google-drive-backup.backup.files') === false ? 'database' : 'database'));
+                $type = (string) (config('google-drive-backup.default_type', 'database'));
             }
 
             Event::dispatch(new BackupStarted($type, $policyName));
@@ -132,6 +133,22 @@ class BackupRunCommand extends Command
 
             if ($subfolder === null && ($this->option('by-type') || (bool) ($config['subfolder_by_type'] ?? false))) {
                 $subfolder = $type; // e.g. 'database', 'files', 'full'
+            }
+
+            if ($subfolder !== null) {
+                $subfolder = str_replace(
+                    ['{year}', '{month}', '{day}', '{date}', '{type}', '{env}', '{app}'],
+                    [
+                        $now->format('Y'),
+                        $now->format('m'),
+                        $now->format('d'),
+                        $now->format('Y-m-d'),
+                        $type,
+                        $env,
+                        $appName,
+                    ],
+                    $subfolder
+                );
             }
 
             $destText = $subfolder !== null ? "[root] / {$subfolder}" : "[root] (folder from .env)";
