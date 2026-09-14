@@ -5,7 +5,11 @@
 ### 1. List Available Backups
 
 ```bash
+# List all backups across root and all subfolders:
 php artisan backup:google-drive:list
+
+# Or filter to a specific subfolder:
+php artisan backup:google-drive:list --subfolder=database
 ```
 
 Note the **ID** of the backup you want to restore.

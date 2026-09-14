@@ -102,7 +102,11 @@ php artisan backup:google-drive
 List backups on Google Drive:
 
 ```bash
+# List all backups across root and all subfolders:
 php artisan backup:google-drive:list
+
+# Filter list to only a specific subfolder (e.g. database):
+php artisan backup:google-drive:list --subfolder=database
 ```
 
 ---
@@ -225,7 +229,7 @@ php artisan backup:google-drive --files --path=".env" --path="composer.json"
 | `backup:google-drive:refresh-token` | Interactively generate OAuth refresh token & save to `.env` |
 | `backup:google-drive` | Create and upload a backup |
 | `backup:google-drive:test` | Test credentials and folder access |
-| `backup:google-drive:list` | List all remote backups |
+| `backup:google-drive:list` | List remote backups across root & subfolders (or filter with `--subfolder=`) |
 | `backup:google-drive:clean` | Apply retention policy and delete expired backups |
 | `backup:google-drive:verify` | Verify remote backup integrity |
 | `backup:google-drive:download {id} {destination}` | Download a backup locally |

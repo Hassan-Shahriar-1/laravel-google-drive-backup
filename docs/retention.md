@@ -35,8 +35,9 @@ If you back up your database every 4 hours (6 backups a day):
 If you run database backups every 4 hours and application file backups once a week:
 * Database backups and file backups are evaluated in **separate groups**.
 * Taking 50 database backups will **never push out or delete your file backups**.
-* If you organize backups into separate subfolders (e.g. `--subfolder=database`), you can also clean each subfolder independently:
+* If you organize backups into separate subfolders (e.g. `--subfolder=database`), you can list and clean each subfolder independently:
   ```bash
+  php artisan backup:google-drive:list --subfolder=database
   php artisan backup:google-drive:clean --subfolder=database
   ```
 
