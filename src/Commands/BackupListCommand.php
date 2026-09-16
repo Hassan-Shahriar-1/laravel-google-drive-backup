@@ -37,7 +37,7 @@ class BackupListCommand extends Command
             $rows = [];
             foreach ($storage->list($folderId ?: null, $subfolder) as $artifact) {
                 $rows[] = [
-                    substr($artifact->id ?? '-', 0, 20),
+                    $artifact->id ?? '-',
                     $artifact->filename,
                     $artifact->subfolder ?? '[root]',
                     $artifact->type,

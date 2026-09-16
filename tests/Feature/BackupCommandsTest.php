@@ -181,4 +181,39 @@ class BackupCommandsTest extends TestCase
         $this->artisan('backup:google-drive:restore', ['id' => 'fake-id', '--force' => true])
             ->assertFailed();
     }
+
+    public function test_resolve_file_id_matches_prefix_or_filename(): void
+    {
+        $fileMgr = \Mockery::mock(\HassanShahriar\GoogleDriveBackup\GoogleDrive\GoogleDriveFileManager::class);
+        $folderMgr = \Mockery::mock(\HassanShahriar\GoogleDriveBackup\GoogleDrive\GoogleDriveFolderManager::class);
+        $client = \Mockery::mock(\HassanShahriar\GoogleDriveBackup\GoogleDrive\GoogleDriveClient::class);
+
+        $folderMgr->shouldReceive('resolveRootFolderId')->andReturn('root-123');
+        $folderMgr->shouldReceive('listSubfolders')->andReturn([]);
+        $fileMgr->shouldReceive('getFile')->with('1MqSVINYx6s1nOZAQZgl')->andReturn(null);
+        $fileMgr->shouldReceive('getFile')->with('asian_skill-production-database-20260916-080002-3200b482.zip')->andReturn(null);
+
+        $fullArtifact = new \HassanShahriar\GoogleDriveBackup\Domain\BackupArtifact(
+            filename: 'asian_skill-production-database-20260916-080002-3200b482.zip',
+            id: '1MqSVINYx6s1nOZAQZgl_FULL_33_CHARS_ID',
+        );
+
+        $driveFile = new \Google\Service\Drive\DriveFile([
+            'id' => '1MqSVINYx6s1nOZAQZgl_FULL_33_CHARS_ID',
+            'name' => 'asian_skill-production-database-20260916-080002-3200b482.zip',
+        ]);
+
+        $fileMgr->shouldReceive('listFiles')->with('root-123')->andReturn([$driveFile]);
+        $fileMgr->shouldReceive('driveFileToArtifact')->andReturn($fullArtifact);
+
+        $storage = new \HassanShahriar\GoogleDriveBackup\GoogleDrive\GoogleDriveStorage($client, $folderMgr, $fileMgr);
+
+        // Test prefix resolution (e.g. truncated 20 chars from old list table)
+        $resolved = $storage->resolveFileId('1MqSVINYx6s1nOZAQZgl');
+        $this->assertSame('1MqSVINYx6s1nOZAQZgl_FULL_33_CHARS_ID', $resolved);
+
+        // Test filename resolution
+        $resolvedByName = $storage->resolveFileId('asian_skill-production-database-20260916-080002-3200b482.zip');
+        $this->assertSame('1MqSVINYx6s1nOZAQZgl_FULL_33_CHARS_ID', $resolvedByName);
+    }
 }

@@ -7,7 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.0.0] - 2026-09-13
+## [2.2.1] - 2026-09-16
+
+### Fixed
+- Fixed ID truncation in `backup:google-drive:list` so the full 33+ character Google Drive file ID is displayed.
+- Added smart file resolution across `backup:google-drive:restore-db` and `backup:google-drive:download` to support targeting backups by filename, truncated ID prefix, or full ID.
+
+## [2.2.0] - 2026-09-14
+
+### Added
+- Dedicated `backup:google-drive:restore-db` command for automated database restoration directly from Google Drive (alias: `restore`).
+- Dynamic path targeting via `--path` option to back up specific directories or files.
+- Subfolder discovery in `backup:google-drive:list` displaying backups across root and child subfolders with a `Folder` column.
+- Connection validation with clear error messages when database driver is unconfigured.
+
+### Changed
+- Removed redundant `--policy` CLI option; retention rules are directly read from `.env`.
+- Cleaned up list table output.
+- Made upgrading documentation version-agnostic.
 
 ### Added
 - Expanded framework support to include all Laravel versions `>=10.0` (Laravel 10, 11, 12, and 13+).

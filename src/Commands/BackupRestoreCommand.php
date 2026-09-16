@@ -56,7 +56,9 @@ class BackupRestoreCommand extends Command
             $fileMgr   = new GoogleDriveFileManager($client);
             $storage   = new GoogleDriveStorage($client, $folderMgr, $fileMgr, $config);
 
-            $storage->download($fileId, $tmpZip);
+            $resolvedFileId = $storage->resolveFileId($fileId);
+
+            $storage->download($resolvedFileId, $tmpZip);
             $sizeMb = round(filesize($tmpZip) / 1024 / 1024, 2);
             $this->info("     ✓ Downloaded ({$sizeMb} MB).");
 

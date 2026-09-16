@@ -44,8 +44,10 @@ class BackupDownloadCommand extends Command
             $fileMgr   = new GoogleDriveFileManager($client);
             $storage   = new GoogleDriveStorage($client, $folderMgr, $fileMgr, $config);
 
+            $resolvedFileId = $storage->resolveFileId($fileId);
+
             $this->info("Downloading backup [{$fileId}]...");
-            $storage->download($fileId, $destination);
+            $storage->download($resolvedFileId, $destination);
 
             $size = filesize($destination);
             $this->info("✓ Downloaded to [{$destination}] (" . number_format((int) $size) . ' bytes).');

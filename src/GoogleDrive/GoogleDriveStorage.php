@@ -119,6 +119,30 @@ class GoogleDriveStorage implements BackupStorage
         $file = $this->fileManager->getFile($id);
         return $file !== null && !$file->getTrashed();
     }
+
+    /**
+     * Resolve a file ID from an exact ID, filename, or ID prefix.
+     */
+    public function resolveFileId(string $identifier): string
+    {
+        // 1. Direct lookup by ID if valid
+        $file = $this->fileManager->getFile($identifier);
+        if ($file !== null && !$file->getTrashed()) {
+            return (string) $file->getId();
+        }
+
+        // 2. Search across backups in root & subfolders by filename or prefix match
+        foreach ($this->list() as $artifact) {
+            if ($artifact->filename === $identifier) {
+                return (string) $artifact->id;
+            }
+            if (!empty($artifact->id) && str_starts_with($artifact->id, $identifier)) {
+                return (string) $artifact->id;
+            }
+        }
+
+        return $identifier;
+    }
 }
 
 /**
